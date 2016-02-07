@@ -3,14 +3,12 @@ require 'unirest'
 require 'json'
 
 require 'lm_rest/resource'
-require 'lm_rest/resource_parser'
 require 'lm_rest/resources/service'
 require 'lm_rest/resources/service_group'
 require 'lm_rest/resources/sdt'
 require 'lm_rest/resources/access_log_entry'
 require 'lm_rest/resources/site_monitor_checkpoint'
 
-require 'lm_rest/resource_parser'
 require 'lm_rest/request_params'
 require 'lm_rest/services'
 require 'lm_rest/service_groups'
@@ -52,8 +50,12 @@ class LMRest
       r = Unirest.delete(@api_url + uri, auth: credentials ,headers: headers, parameters: params)
     end
 
-    yield r.body if block_given?
-    r.body
+    #yield r.body if block_given?
+    #r.body
+    
+    response = Resource.parse(uri, r.body)
+    yield response if block_given?
+    response
   end
 
   def get(uri, json = nil, &block)
