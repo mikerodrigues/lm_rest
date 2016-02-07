@@ -1,5 +1,5 @@
 class LMRest
-  class AccessLogEntry
+  class AccessLogEntry < Resource
 
   end
 end

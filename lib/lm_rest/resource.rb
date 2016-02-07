@@ -1,6 +1,7 @@
 class LMRest
   class Resource
     def initialize(properties)
+      @properties = properties.keys
       properties.each do |key, value|
         instance_variable_set(:"@#{key}", value)
         define_singleton_method(key.intern) { instance_variable_get("@#{key}") }
@@ -10,9 +11,17 @@ class LMRest
       end
     end
 
+    def to_h
+      hash = {}
+      @properties.map do |key|
+        hash[key] = self.send(key.intern)
+      end
+      hash
+    end
+
     class << self
       def create(type, properties)
-        Object.const_get("LMRest::#{type}").new(properties)
+        type.new(properties)
       end
 
       def parse(uri, response)
@@ -43,7 +52,7 @@ class LMRest
         when /sdts/
           SDT
         when /accesslogs/
-          AccessLogEntry 
+          AccessLogEntry
         when /smcheckpoints/
           SiteMonitorCheckpoint
         else
