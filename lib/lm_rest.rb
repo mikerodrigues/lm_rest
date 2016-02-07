@@ -1,6 +1,16 @@
 require 'lm_rest/version'
 require 'unirest'
 require 'json'
+
+require 'lm_rest/resource'
+require 'lm_rest/resource_parser'
+require 'lm_rest/resources/service'
+require 'lm_rest/resources/service_group'
+require 'lm_rest/resources/sdt'
+require 'lm_rest/resources/access_log_entry'
+require 'lm_rest/resources/site_monitor_checkpoint'
+
+require 'lm_rest/resource_parser'
 require 'lm_rest/request_params'
 require 'lm_rest/services'
 require 'lm_rest/service_groups'
@@ -25,7 +35,7 @@ class LMRest
     @username    = username
     @password    = password
     @api_url     = BASE_URL_PREFIX + accountname + BASE_URL_SUFFIX
-    @credentials        = { user: username, password: password }
+    @credentials = { user: username, password: password }
   end
 
   def request(method, uri, json = nil)
