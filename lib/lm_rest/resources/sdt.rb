@@ -1,5 +1,5 @@
 class LMRest
-  class SDT
+  class SDT < Resource
 
   end
 end
