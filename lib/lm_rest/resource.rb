@@ -45,6 +45,8 @@ class LMRest
 
       def get_type(uri)
         case uri
+        when /datasources/
+          Datasource
         when /services/
           Service
         when /groups/

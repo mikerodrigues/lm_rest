@@ -2,14 +2,20 @@ require 'lm_rest/version'
 require 'unirest'
 require 'json'
 
+# API Resource Objects
 require 'lm_rest/resource'
+require 'lm_rest/resource/datasource'
 require 'lm_rest/resources/service'
 require 'lm_rest/resources/service_group'
 require 'lm_rest/resources/sdt'
 require 'lm_rest/resources/access_log_entry'
 require 'lm_rest/resources/site_monitor_checkpoint'
 
+
 require 'lm_rest/request_params'
+
+# API Endpoints
+require 'lm_rest/datasources'
 require 'lm_rest/services'
 require 'lm_rest/service_groups'
 require 'lm_rest/sdts'
@@ -17,6 +23,7 @@ require 'lm_rest/access_logs'
 require 'lm_rest/site_monitor_checkpoints'
 
 class LMRest
+  include Datasources
   include Services
   include ServiceGroups
   include SDTs
