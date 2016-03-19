@@ -26,6 +26,10 @@ class LMRest
       end
 
       def parse(uri, response)
+        if response.is_a? String
+          warn response
+          return
+        end
         begin
           type = get_type uri
           if response["data"].has_key? 'items'
@@ -36,8 +40,6 @@ class LMRest
 
         rescue => e
           puts e
-          puts "========Response========"
-          puts response
         end
       end
 
@@ -55,12 +57,18 @@ class LMRest
         case uri
         when /batchjobs/
           Batchjob
-        when /datasources/
-          Datasource
         when /eventsource/
           Eventsource
         when /function/
           Function
+        when /ographs/
+          OverviewGraph 
+        when /graphs/
+          Graph 
+        when /datapoints/
+          Datapoint
+        when /datasources/
+          Datasource
         when /oid/
           OID
         when /services/
@@ -74,7 +82,7 @@ class LMRest
         when /smcheckpoints/
           SiteMonitorCheckpoint
         else
-          raise "Unrecognized response type for uri: #{uri}"
+          raise "Did not recognize the response type associated with this uri: #{uri}"
         end
       end
     end

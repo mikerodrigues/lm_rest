@@ -6,8 +6,11 @@ require 'json'
 require 'lm_rest/resource'
 require 'lm_rest/resources/batchjob'
 require 'lm_rest/resources/datasource'
+require 'lm_rest/resources/datapoint'
 require 'lm_rest/resources/eventsource'
 require 'lm_rest/resources/function'
+require 'lm_rest/resources/graph'
+require 'lm_rest/resources/overview_graph'
 require 'lm_rest/resources/oid'
 require 'lm_rest/resources/service'
 require 'lm_rest/resources/service_group'
@@ -21,8 +24,11 @@ require 'lm_rest/request_params'
 # API Endpoints
 require 'lm_rest/batchjobs'
 require 'lm_rest/datasources'
+require 'lm_rest/datapoints'
 require 'lm_rest/eventsources'
 require 'lm_rest/functions'
+require 'lm_rest/graphs'
+require 'lm_rest/overview_graphs'
 require 'lm_rest/oids'
 require 'lm_rest/services'
 require 'lm_rest/service_groups'
@@ -33,8 +39,11 @@ require 'lm_rest/site_monitor_checkpoints'
 class LMRest
   include Batchjobs
   include Datasources
+  include Datapoints
   include Eventsources
   include Functions
+  include Graphs
+  include OverviewGraphs
   include OIDs
   include Services
   include ServiceGroups
@@ -65,12 +74,15 @@ class LMRest
       r = Unirest.get(@api_url + uri, auth: credentials, headers: headers)
     elsif method == :post
       r = Unirest.post(@api_url + uri, auth: credentials ,headers: headers, parameters: params)
+    elsif method == :put
+      r = Unirest.put(@api_url + uri, auth: credentials ,headers: headers, parameters: params)
     elsif method == :delete
       r = Unirest.delete(@api_url + uri, auth: credentials ,headers: headers, parameters: params)
     end
 
     #yield r.body if block_given?
     #r.body
+    #
     
     response = Resource.parse(uri, r.body)
     yield response if block_given?
