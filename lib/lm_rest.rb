@@ -4,7 +4,11 @@ require 'json'
 
 # API Resource Objects
 require 'lm_rest/resource'
-require 'lm_rest/resource/datasource'
+require 'lm_rest/resources/batchjob'
+require 'lm_rest/resources/datasource'
+require 'lm_rest/resources/eventsource'
+require 'lm_rest/resources/function'
+require 'lm_rest/resources/oid'
 require 'lm_rest/resources/service'
 require 'lm_rest/resources/service_group'
 require 'lm_rest/resources/sdt'
@@ -15,7 +19,11 @@ require 'lm_rest/resources/site_monitor_checkpoint'
 require 'lm_rest/request_params'
 
 # API Endpoints
+require 'lm_rest/batchjobs'
 require 'lm_rest/datasources'
+require 'lm_rest/eventsources'
+require 'lm_rest/functions'
+require 'lm_rest/oids'
 require 'lm_rest/services'
 require 'lm_rest/service_groups'
 require 'lm_rest/sdts'
@@ -23,7 +31,11 @@ require 'lm_rest/access_logs'
 require 'lm_rest/site_monitor_checkpoints'
 
 class LMRest
+  include Batchjobs
   include Datasources
+  include Eventsources
+  include Functions
+  include OIDs
   include Services
   include ServiceGroups
   include SDTs
@@ -71,6 +83,10 @@ class LMRest
 
   def post(uri, json = nil, &block)
     request(:post, uri, json, &block)
+  end
+
+  def put(uri, json = nil, &block)
+    request(:put, uri, json, &block)
   end
 
   def delete(uri, json = nil, &block)

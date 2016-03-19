@@ -16,7 +16,7 @@ class LMRest
     end
 
     def update_sdt(id, properties, &block)
-      post("#{BASE_URL}/#{id}", properties, &block)
+      put("#{BASE_URL}/#{id}", properties, &block)
     end
 
     def delete_sdt(id, &block)

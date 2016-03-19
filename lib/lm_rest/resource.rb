@@ -16,6 +16,7 @@ class LMRest
       @properties.map do |key|
         hash[key] = self.send(key.intern)
       end
+
       hash
     end
 
@@ -25,11 +26,18 @@ class LMRest
       end
 
       def parse(uri, response)
-        type = get_type uri
-        if response["data"].has_key? 'items'
-          parse_collection(type, response["data"]["items"])
-        else
-          parse_object(type, response["data"])
+        begin
+          type = get_type uri
+          if response["data"].has_key? 'items'
+            parse_collection(type, response["data"]["items"])
+          else
+            parse_object(type, response["data"])
+          end
+
+        rescue => e
+          puts e
+          puts "========Response========"
+          puts response
         end
       end
 
@@ -45,8 +53,16 @@ class LMRest
 
       def get_type(uri)
         case uri
+        when /batchjobs/
+          Batchjob
         when /datasources/
           Datasource
+        when /eventsource/
+          Eventsource
+        when /function/
+          Function
+        when /oid/
+          OID
         when /services/
           Service
         when /groups/
@@ -58,7 +74,7 @@ class LMRest
         when /smcheckpoints/
           SiteMonitorCheckpoint
         else
-          raise "Unrecognized resposne type for uri: #{uri}"
+          raise "Unrecognized response type for uri: #{uri}"
         end
       end
     end

@@ -16,7 +16,7 @@ class LMRest
     end
 
     def update_service_group(id, properties, &block)
-      post("#{BASE_URL}/#{id}", properties, &block)
+      put("#{BASE_URL}/#{id}", properties, &block)
     end
 
     def service_group_sdts(id, params = {}, &block)
