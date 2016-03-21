@@ -2,6 +2,7 @@
 #
 #
 require 'lm_rest'
+require 'colorize'
 
 
 def usage
@@ -110,13 +111,13 @@ def test_datapoint_usage(datapoints, complex_datapoints, graphs, overview_graphs
   # is an alert trigger set?
   datapoints.each do |datapoint|
     if datapoint.alertExpr.size > 0
-      puts " - " + dp_type(datapoint) + datapoint.name + " has alert threshold set"
+      puts " - " + dp_type(datapoint) + ' datapoint "' + datapoint.name + '" has alert threshold set'
     else
 
       # is this datapoint used in a complex datapoint?
       complex_datapoints.each do |complex_datapoint|
         if complex_datapoint.postProcessorParam.include? datapoint.name
-          puts(' - ' + dp_type(datapoint) + ' "' + datapoint.name +
+          puts(' - ' + dp_type(datapoint) + ' datapoint "' + datapoint.name +
                '" used in complex datapoint' + complex_datapoint.name)
           datapoint_ok.push(datapoint.name)
           break
@@ -127,7 +128,7 @@ def test_datapoint_usage(datapoints, complex_datapoints, graphs, overview_graphs
       graphs.each do |graph|
         graph.dataPoints.each do |graph_datapoint|
           if datapoint.name == graph_datapoint["name"]
-            puts(' - ' + dp_type(datapoint) + ' "' + datapoint.name +
+            puts(' - ' + dp_type(datapoint) + ' datapoint "' + datapoint.name +
                  '" used in graph "' + graph.name + '" datapoint')
             datapoint_ok.push(datapoint.name)
             break
@@ -138,7 +139,7 @@ def test_datapoint_usage(datapoints, complex_datapoints, graphs, overview_graphs
       overview_graphs.each do |ograph|
         ograph.dataPoints.each do |ograph_datapoint|
           if datapoint.name == ograph_datapoint["name"]
-            puts(' - ' + dp_type(datapoint) + ' "' + datapoint.name +
+            puts(' - ' + dp_type(datapoint) + ' datapoint "' + datapoint.name +
                  '" used in overview graph "' + ograph.name + '" datapoint')
             datapoint_ok.push(datapoint.name)
             break
@@ -175,7 +176,7 @@ def test_graphs(graphs)
     if display_prios.include? graph.displayPrio
       errors.push('graph "' + graph.name + '" is assigned the same display priority (' +
                   graph.displayPrio.to_s + ') as "' +
-                  display_prios[graph.displayPrio])
+                  display_prios[graph.displayPrio] + '"')
     else
       # no -- store this priority in a hash for further testing
       display_prios[graph.displayPrio] = graph.name
@@ -203,7 +204,7 @@ def test_overview_graphs(overview_graphs)
     if display_prios.include? ograph.displayPrio
       errors.push('overview graph "' + ograph.name + '" is assigned the same display priority (' +
                   ograph.displayPrio.to_s + ') as "' +
-                  display_prios[ograph.displayPrio])
+                  display_prios[ograph.displayPrio] + '"')
     else
       display_prios[ograph.displayPrio] = ograph.name
     end
@@ -224,12 +225,12 @@ def summarize(datasource, datapoints, graphs, overview_graphs)
   puts "Summary:"
 
   puts " - datasource name:\t#{datasource.name}"
-  puts " - display name:\t\t#{datasource.displayName}"
+  puts " - display name:\t#{datasource.displayName}"
   puts " - applies to:\t\t#{datasource.appliesTo}"
   puts " - polling interval:\t#{datasource.collectInterval/60}m"
-  puts " - multipoint instance?:\t#{datasource.hasMultiInstances}"
+  puts " - multipoint instance:\t#{datasource.hasMultiInstances}"
   puts " - datapoints:\t\t#{datasource.dataPoints.count}"
-  puts " - datapoint_alerts:\t#{datapoint_alert_count}"
+  puts " - datapoint alerts:\t#{datapoint_alert_count}"
   puts " - graphs:\t\t#{graphs.count}"
   puts " - overview graphs:\t#{overview_graphs.count}"
 
@@ -240,7 +241,7 @@ def propose_fixes(errors)
   puts "Proposed Fixes:"
 
   errors.flatten.each do |error|
-    puts " * " + error
+    puts " * #{error}".colorize(:red)
   end
 end
 

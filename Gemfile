@@ -1,6 +1,7 @@
 source 'https://rubygems.org'
 
 gem 'unirest'
+gem 'colorize'
 
 group :development do 
   gem 'pry'
