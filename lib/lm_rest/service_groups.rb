@@ -1,6 +1,6 @@
 class LMRest
   module ServiceGroups
-    BASE_URL = "/service/groups"
+    BASE_URL = '/service/groups'
     include RequestParams
 
     def get_service_groups(params = {}, &block)

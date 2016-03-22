@@ -1,6 +1,6 @@
 class LMRest
-  module Batchjobs 
-    BASE_URL = "/setting/batchjobs"
+  module Batchjobs
+    BASE_URL = '/setting/batchjobs'
     include RequestParams
 
     def get_batchjobs(params = {}, &block)

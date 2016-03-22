@@ -18,7 +18,6 @@ require 'lm_rest/resources/sdt'
 require 'lm_rest/resources/access_log_entry'
 require 'lm_rest/resources/site_monitor_checkpoint'
 
-
 require 'lm_rest/request_params'
 
 # API Endpoints
@@ -73,17 +72,17 @@ class LMRest
     if method == :get
       r = Unirest.get(@api_url + uri, auth: credentials, headers: headers)
     elsif method == :post
-      r = Unirest.post(@api_url + uri, auth: credentials ,headers: headers, parameters: params)
+      r = Unirest.post(@api_url + uri, auth: credentials, headers: headers, parameters: params)
     elsif method == :put
-      r = Unirest.put(@api_url + uri, auth: credentials ,headers: headers, parameters: params)
+      r = Unirest.put(@api_url + uri, auth: credentials, headers: headers, parameters: params)
     elsif method == :delete
-      r = Unirest.delete(@api_url + uri, auth: credentials ,headers: headers, parameters: params)
+      r = Unirest.delete(@api_url + uri, auth: credentials, headers: headers, parameters: params)
     end
 
-    #yield r.body if block_given?
-    #r.body
+    # yield r.body if block_given?
+    # r.body
     #
-    
+
     response = Resource.parse(uri, r.body)
     yield response if block_given?
     response

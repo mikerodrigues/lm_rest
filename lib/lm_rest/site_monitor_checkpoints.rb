@@ -1,6 +1,6 @@
 class LMRest
   module SiteMonitorCheckpoints
-    BASE_URL = "/service/smcheckpoints"
+    BASE_URL = '/service/smcheckpoints'
     include RequestParams
 
     def get_site_monitor_checkpoints(params = {}, &block)

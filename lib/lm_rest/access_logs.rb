@@ -1,6 +1,6 @@
 class LMRest
   module AccessLogs
-    BASE_URL = "/setting/accesslogs"
+    BASE_URL = '/setting/accesslogs'
     include RequestParams
 
     def get_access_logs(params = {}, &block)

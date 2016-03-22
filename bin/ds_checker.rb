@@ -4,9 +4,8 @@
 require 'lm_rest'
 require 'colorize'
 
-
 def usage
-  puts "USAGE:\t" + $0 + " account userid passwd datasource_name_or_glob"
+  puts "USAGE:\t" + $PROGRAM_NAME + ' account userid passwd datasource_name_or_glob'
 end
 
 if ARGV.length == 4
@@ -16,29 +15,25 @@ if ARGV.length == 4
   @lm = LMRest.new(@account, @userid, @passwd)
 else
   usage
-  fail "Bad arguments."
+  fail 'Bad arguments.'
 end
 
 def dp_type(datapoint)
-  datapoint.postProcessorMethod == "expression" ? 'complex' : 'normal'
+  datapoint.postProcessorMethod == 'expression' ? 'complex' : 'normal'
 end
 
 def test_datasource_name(datasource)
   errors = []
 
   # does the name contain whitespace?
-  if datasource.name =~ /\s+/
-    errors.push("datasource name contains whitespace")
-  end
+  errors.push('datasource name contains whitespace') if datasource.name =~ /\s+/
 
   # does the name end in a trailing dash?
-  if datasource.name =~ /\-$/
-    errors.push("datasource name has trailing dash")
-  end
+  errors.push('datasource name has trailing dash') if datasource.name =~ /\-$/
 
   # does the display name end in a trailing dash?
   if datasource.displayName =~ /\-$/
-    errors.push("datasource display name has trailing dash")
+    errors.push('datasource display name has trailing dash')
   end
 
   errors
@@ -49,7 +44,7 @@ def test_datasource_description(datasource)
 
   # is the description size less than 10 characters in length?
   if datasource.description.length < 10
-    error = "datasource description is empty or sparse"
+    error = 'datasource description is empty or sparse'
   end
 
   error
@@ -87,14 +82,13 @@ def test_datapoint_alerts(datapoints)
 
     # is there a custom alert message on this datapoint?
     #
-    if datapoint.alertBody.size > 0
-      tokens.each do |token|
-        # is this token in the datasource definition?
-        #
-        unless datapoint.alertBody.include? token
-          errors.push("custom alert message on \"" + datapoint.name +
-                      "\" datpoint doesn't include token " + token)
-        end
+    next unless datapoint.alertBody.size > 0
+    tokens.each do |token|
+      # is this token in the datasource definition?
+      #
+      unless datapoint.alertBody.include? token
+        errors.push("custom alert message on \"" + datapoint.name +
+                    "\" datpoint doesn't include token " + token)
       end
     end
   end
@@ -106,43 +100,40 @@ def test_datapoint_usage(datapoints, complex_datapoints, graphs, overview_graphs
   errors = []
   datapoint_ok = []
 
-  puts "Datapoints:"
+  puts 'Datapoints:'
   # is an alert trigger set?
   datapoints.each do |datapoint|
     if datapoint.alertExpr.size > 0
-      puts " - " + dp_type(datapoint) + ' datapoint "' + datapoint.name + '" has alert threshold set'
+      puts ' - ' + dp_type(datapoint) + ' datapoint "' + datapoint.name + '" has alert threshold set'
     else
 
       # is this datapoint used in a complex datapoint?
       complex_datapoints.each do |complex_datapoint|
-        if complex_datapoint.postProcessorParam.include? datapoint.name
-          puts(' - ' + dp_type(datapoint) + ' datapoint "' + datapoint.name +
-               '" used in complex datapoint' + complex_datapoint.name)
-          datapoint_ok.push(datapoint.name)
-          break
-        end
+        next unless complex_datapoint.postProcessorParam.include? datapoint.name
+        puts(' - ' + dp_type(datapoint) + ' datapoint "' + datapoint.name +
+                       '" used in complex datapoint' + complex_datapoint.name)
+        datapoint_ok.push(datapoint.name)
+        break
       end
 
       # is this datapoint used in any graphs?
       graphs.each do |graph|
         graph.dataPoints.each do |graph_datapoint|
-          if datapoint.name == graph_datapoint["name"]
-            puts(' - ' + dp_type(datapoint) + ' datapoint "' + datapoint.name +
-                 '" used in graph "' + graph.name + '" datapoint')
-            datapoint_ok.push(datapoint.name)
-            break
-          end
+          next unless datapoint.name == graph_datapoint['name']
+          puts(' - ' + dp_type(datapoint) + ' datapoint "' + datapoint.name +
+                           '" used in graph "' + graph.name + '" datapoint')
+          datapoint_ok.push(datapoint.name)
+          break
         end
       end
 
       overview_graphs.each do |ograph|
         ograph.dataPoints.each do |ograph_datapoint|
-          if datapoint.name == ograph_datapoint["name"]
-            puts(' - ' + dp_type(datapoint) + ' datapoint "' + datapoint.name +
-                 '" used in overview graph "' + ograph.name + '" datapoint')
-            datapoint_ok.push(datapoint.name)
-            break
-          end
+          next unless datapoint.name == ograph_datapoint['name']
+          puts(' - ' + dp_type(datapoint) + ' datapoint "' + datapoint.name +
+                           '" used in overview graph "' + ograph.name + '" datapoint')
+          datapoint_ok.push(datapoint.name)
+          break
         end
       end
 
@@ -159,7 +150,7 @@ end
 def test_graphs(graphs)
   errors = []
 
-  puts "Graphs:"
+  puts 'Graphs:'
 
   display_prios = {}
   graphs.each do |graph|
@@ -189,7 +180,7 @@ end
 def test_overview_graphs(overview_graphs)
   errors = []
 
-  puts "Overview Graphs:"
+  puts 'Overview Graphs:'
 
   display_prios = {}
   overview_graphs.each do |ograph|
@@ -216,17 +207,15 @@ end
 def summarize(datasource, datapoints, graphs, overview_graphs)
   datapoint_alert_count = 0
   datapoints.each do |datapoint|
-    if datapoint.alertExpr.size > 0
-      datapoint_alert_count += 1
-    end
+    datapoint_alert_count += 1 if datapoint.alertExpr.size > 0
   end
 
-  puts "Summary:"
+  puts 'Summary:'
 
   puts " - datasource name:\t#{datasource.name}"
   puts " - display name:\t#{datasource.displayName}"
   puts " - applies to:\t\t#{datasource.appliesTo}"
-  puts " - polling interval:\t#{datasource.collectInterval/60}m"
+  puts " - polling interval:\t#{datasource.collectInterval / 60}m"
   puts " - multipoint instance:\t#{datasource.hasMultiInstances}"
   puts " - datapoints:\t\t#{datasource.dataPoints.count}"
   puts " - datapoint alerts:\t#{datapoint_alert_count}"
@@ -237,7 +226,7 @@ def summarize(datasource, datapoints, graphs, overview_graphs)
 end
 
 def propose_fixes(errors)
-  puts "Proposed Fixes:"
+  puts 'Proposed Fixes:'
 
   errors.flatten.each do |error|
     puts " * #{error}".colorize(:red)
@@ -245,7 +234,7 @@ def propose_fixes(errors)
 end
 
 def separator
-  puts "============================="
+  puts '============================='
 end
 
 @datasources = @lm.get_datasources(filter: "name:#{ARGV[3]}")
@@ -253,7 +242,7 @@ end
 @datasources.each do |datasource|
   errors = []
   datapoints = @lm.get_datapoints(datasource.id)
-  complex_datapoints = datapoints.select{|dp| dp.postProcessorMethod == "expression"}
+  complex_datapoints = datapoints.select { |dp| dp.postProcessorMethod == 'expression' }
   graphs = @lm.get_graphs(datasource.id)
   overview_graphs = @lm.get_overview_graphs(datasource.id)
 

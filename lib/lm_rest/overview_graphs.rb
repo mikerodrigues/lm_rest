@@ -1,6 +1,6 @@
 class LMRest
-  module OverviewGraphs 
-    BASE_URL = "/setting/datasources"
+  module OverviewGraphs
+    BASE_URL = '/setting/datasources'
     include RequestParams
 
     def get_overview_graphs(id, params = {}, &block)

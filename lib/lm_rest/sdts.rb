@@ -1,6 +1,6 @@
 class LMRest
-  module SDTs 
-    BASE_URL = "/sdt/sdts"
+  module SDTs
+    BASE_URL = '/sdt/sdts'
     include RequestParams
 
     def get_sdts(params = {}, &block)

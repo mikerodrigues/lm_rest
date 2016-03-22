@@ -1,6 +1,6 @@
 class LMRest
-  module Eventsources 
-    BASE_URL = "/setting/eventsources"
+  module Eventsources
+    BASE_URL = '/setting/eventsources'
     include RequestParams
 
     def get_eventsources(params = {}, &block)
