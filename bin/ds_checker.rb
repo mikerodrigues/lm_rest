@@ -1,6 +1,8 @@
 #!/usr/bin/env ruby
 #
 #
+# Based on a script written originally by Matt Dunham
+#
 require 'lm_rest'
 require 'colorize'
 
