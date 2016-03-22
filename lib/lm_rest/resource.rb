@@ -5,8 +5,8 @@ class LMRest
       properties.each do |key, value|
         instance_variable_set(:"@#{key}", value)
         define_singleton_method(key.intern) { instance_variable_get("@#{key}") }
-        define_singleton_method("#{key}=".intern) do |value|
-          instance_variable_set("@#{key}", value)
+        define_singleton_method("#{key}=".intern) do |new_value|
+          instance_variable_set("@#{key}", new_value)
         end
       end
     end

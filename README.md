@@ -11,11 +11,12 @@ gem 'lm_rest'
 
 And then execute:
 
-$ bundle
+`$ bundle`
 
 Or install it yourself as:
 
-$ gem install lm_rest
+`$ gem install lm_rest`
+
 
 
 ## Usage
@@ -29,9 +30,11 @@ require 'lm_rest'
 lm = LMRest.new(company_name, user_id, password)
 
 
+
 # returns array of Datasource objects
 #
 lm.get_datasources
+
 
 # get a datasource by id
 lm.get_datasource(721)

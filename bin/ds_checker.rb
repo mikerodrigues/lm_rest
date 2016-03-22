@@ -103,7 +103,6 @@ def test_datapoint_alerts(datapoints)
 end
 
 def test_datapoint_usage(datapoints, complex_datapoints, graphs, overview_graphs)
-  datapoint_report = []
   errors = []
   datapoint_ok = []
 
@@ -253,9 +252,7 @@ end
 
 @datasources.each do |datasource|
   errors = []
-  datapoint_alert_count = 0
   datapoints = @lm.get_datapoints(datasource.id)
-  normal_datapoints = datapoints.select{|dp| dp.postProcessorMethod != "expression"}
   complex_datapoints = datapoints.select{|dp| dp.postProcessorMethod == "expression"}
   graphs = @lm.get_graphs(datasource.id)
   overview_graphs = @lm.get_overview_graphs(datasource.id)
