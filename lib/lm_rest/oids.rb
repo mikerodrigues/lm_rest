@@ -1,6 +1,6 @@
 class LMRest
-  module OIDs 
-    BASE_URL = "/setting/oids"
+  module OIDs
+    BASE_URL = '/setting/oids'
     include RequestParams
 
     def get_oids(params = {}, &block)

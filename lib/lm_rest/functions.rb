@@ -1,6 +1,6 @@
 class LMRest
-  module Functions 
-    BASE_URL = "/setting/functions"
+  module Functions
+    BASE_URL = '/setting/functions'
     include RequestParams
 
     def get_functions(params = {}, &block)

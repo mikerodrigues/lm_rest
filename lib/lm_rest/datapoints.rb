@@ -1,6 +1,6 @@
 class LMRest
-  module Datapoints 
-    BASE_URL = "/setting/datasources"
+  module Datapoints
+    BASE_URL = '/setting/datasources'
     include RequestParams
 
     def get_datapoints(id, params = {}, &block)

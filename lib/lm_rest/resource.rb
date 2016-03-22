@@ -14,7 +14,7 @@ class LMRest
     def to_h
       hash = {}
       @properties.map do |key|
-        hash[key] = self.send(key.intern)
+        hash[key] = send(key.intern)
       end
 
       hash
@@ -32,10 +32,10 @@ class LMRest
         end
         begin
           type = get_type uri
-          if response["data"].has_key? 'items'
-            parse_collection(type, response["data"]["items"])
+          if response['data'].key? 'items'
+            parse_collection(type, response['data']['items'])
           else
-            parse_object(type, response["data"])
+            parse_object(type, response['data'])
           end
 
         rescue => e
@@ -62,9 +62,9 @@ class LMRest
         when /function/
           Function
         when /ographs/
-          OverviewGraph 
+          OverviewGraph
         when /graphs/
-          Graph 
+          Graph
         when /datapoints/
           Datapoint
         when /datasources/
@@ -82,7 +82,7 @@ class LMRest
         when /smcheckpoints/
           SiteMonitorCheckpoint
         else
-          raise "Did not recognize the response type associated with this uri: #{uri}"
+          fail "Did not recognize the response type associated with this uri: #{uri}"
         end
       end
     end
