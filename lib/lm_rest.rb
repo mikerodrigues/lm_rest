@@ -17,6 +17,7 @@ require 'lm_rest/resources/service_group'
 require 'lm_rest/resources/sdt'
 require 'lm_rest/resources/access_log_entry'
 require 'lm_rest/resources/site_monitor_checkpoint'
+require 'lm_rest/resources/widget'
 
 require 'lm_rest/request_params'
 
@@ -34,6 +35,7 @@ require 'lm_rest/service_groups'
 require 'lm_rest/sdts'
 require 'lm_rest/access_logs'
 require 'lm_rest/site_monitor_checkpoints'
+require 'lm_rest/widgets'
 
 class LMRest
   include Batchjobs
@@ -49,6 +51,7 @@ class LMRest
   include SDTs
   include AccessLogs
   include SiteMonitorCheckpoints
+  include Widgets
 
   BASE_URL_PREFIX = 'https://'
   BASE_URL_SUFFIX = '.logicmonitor.com/santaba/rest'

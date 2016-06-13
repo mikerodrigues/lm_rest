@@ -81,6 +81,8 @@ class LMRest
           AccessLogEntry
         when /smcheckpoints/
           SiteMonitorCheckpoint
+        when /widget/
+          Widget
         else
           fail "Did not recognize the response type associated with this uri: #{uri}"
         end
