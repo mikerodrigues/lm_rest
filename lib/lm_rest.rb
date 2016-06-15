@@ -20,45 +20,18 @@ require 'lm_rest/resources/site_monitor_checkpoint'
 require 'lm_rest/resources/widget'
 
 require 'lm_rest/request_params'
-
-# API Endpoints
-require 'lm_rest/batchjobs'
-require 'lm_rest/datasources'
-require 'lm_rest/datapoints'
-require 'lm_rest/eventsources'
-require 'lm_rest/functions'
-require 'lm_rest/graphs'
-require 'lm_rest/overview_graphs'
-require 'lm_rest/oids'
-require 'lm_rest/services'
-require 'lm_rest/service_groups'
-require 'lm_rest/sdts'
-require 'lm_rest/access_logs'
-require 'lm_rest/site_monitor_checkpoints'
-require 'lm_rest/widgets'
+require 'lm_rest/api_client'
 
 class LMRest
-  include Batchjobs
-  include Datasources
-  include Datapoints
-  include Eventsources
-  include Functions
-  include Graphs
-  include OverviewGraphs
-  include OIDs
-  include Services
-  include ServiceGroups
-  include SDTs
-  include AccessLogs
-  include SiteMonitorCheckpoints
-  include Widgets
+  include APIClient
 
   BASE_URL_PREFIX = 'https://'
-  BASE_URL_SUFFIX = '.logicmonitor.com/santaba/rest'
+  BASE_URL_SUFFIX = '.logicmonitor.com/santaba/rest/'
 
   attr_reader :accountname, :username, :api_url
 
   def initialize(accountname, username, password)
+    APIClient.setup
     @accountname = accountname
     @username    = username
     @password    = password
