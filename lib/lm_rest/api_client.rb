@@ -11,7 +11,7 @@ class LMRest
 
         # Define a method to fetch all objects
         define_method("get_#{object}") do | params = {}, &block |
-          get("#{category}/#{object}/#{parameterize(params)}", nil, &block)
+          get("#{category}/#{object}#{parameterize(params)}", nil, &block)
         end
 
         # Define a method to get once object by it's ID
@@ -44,14 +44,8 @@ class LMRest
 
     def APIClient.singularize(string)
       case string
-      when /.*ies$/
-        string.match(/(.*)ies$/)[1] + "y"
-      when /.*es$/
-        string.match(/(.*)es$/)[1]
       when /.*s$/
         string.match(/(.*)s$/)[1]
-      when /.*ii$/
-        string.match(/(.*)ii$/)[1] + "us"
       end
     end
   end

@@ -1,5 +1,16 @@
+require 'json'
+
 class LMRest
   class Resource
+
+    begin
+      api_definition_path = File.expand_path(File.join(File.dirname(__FILE__), "../../api.json"))
+      @@api_json = JSON.parse(File.read(api_definition_path))
+    rescue
+      puts "could not find the api.json file"
+      fail
+    end
+
     def initialize(properties)
       @properties = properties.keys
       properties.each do |key, value|
@@ -21,21 +32,23 @@ class LMRest
     end
 
     class << self
-      def create(type, properties)
-        type.new(properties)
-      end
 
       def parse(uri, response)
         if response.is_a? String
           warn response
           return
         end
+        
+        if response['status'] != 200
+          warn response['errmsg']
+          return
+        end
+
         begin
-          type = get_type uri
           if response['data'].key? 'items'
-            parse_collection(type, response['data']['items'])
+            parse_collection(response['data']['items'])
           else
-            parse_object(type, response['data'])
+            parse_object(response['data'])
           end
 
         rescue => e
@@ -43,49 +56,14 @@ class LMRest
         end
       end
 
-      def parse_collection(type, items)
+      def parse_collection(items)
         items.map do |item|
-          create(type, item)
+          new(item)
         end
       end
 
-      def parse_object(type, item)
-        create(type, item)
-      end
-
-      def get_type(uri)
-        case uri
-        when /batchjobs/
-          Batchjob
-        when /eventsource/
-          Eventsource
-        when /function/
-          Function
-        when /ographs/
-          OverviewGraph
-        when /graphs/
-          Graph
-        when /datapoints/
-          Datapoint
-        when /datasources/
-          Datasource
-        when /oid/
-          OID
-        when /services/
-          Service
-        when /groups/
-          ServiceGroup
-        when /sdts/
-          SDT
-        when /accesslogs/
-          AccessLogEntry
-        when /smcheckpoints/
-          SiteMonitorCheckpoint
-        when /widget/
-          Widget
-        else
-          fail "Did not recognize the response type associated with this uri: #{uri}"
-        end
+      def parse_object(item)
+        new(item)
       end
     end
   end

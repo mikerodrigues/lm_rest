@@ -1,77 +1,84 @@
 {
-  "api": {
-    "categories": {
-      "setting": {
-        "accesslogs": {
-          "actions": [
-            "get"
-          ]
-        },
-        "batchjobs": {
-          "actions": [
-            "get",
-            "add",
-            "update",
-            "delete"
-          ]
-        },
-        "datasources": {
-          "actions": [
-            "get",
-            "add",
-            "update",
-            "delete"
-          ],
-          "children": {
-            "datapoints": {
-              "actions": [
-                "get",
-                "add",
-                "update",
-                "delete"
-              ]
-            }
-          }
-        },
-        "functions": {
-          "actions": [
-            "get",
-            "add",
-            "update",
-            "delete"
-          ]
-        },
-        "oids": {
-          "actions": [
-            "get",
-            "add",
-            "update",
-            "delete"
-          ]
-        }
-      },
-      "service": {
-        "services": {
-          "actions": [
-            "get",
-            "add",
-            "update",
-            "delete"
-          ],
-          "children": {
-            "sdts": {
-              "actions": [
-                "get"
-              ]
-            }
-          }
-        },
-        "smcheckpoints": {
-          "actions": [
-            "get"
-          ]
-        }
-      }
-    }
-  }
+	"api": {
+		"categories": {
+			"setting": {
+				"accesslogs": {
+					"object_type": "AccessLogEntry",
+					"actions": [
+						"get"
+					]
+				},
+				"batchjobs": {
+					"object_type": "Batchjob",
+					"actions": [
+						"get",
+						"add",
+						"update",
+						"delete"
+					]
+				},
+				"datasources": {
+					"object_type": "Datasource",
+					"actions": [
+						"get",
+						"add",
+						"update",
+						"delete"
+					],
+					"children": {
+						"datapoints": {
+							"actions": [
+								"get",
+								"add",
+								"update",
+								"delete"
+							]
+						}
+					}
+				},
+				"functions": {
+					"object_type": "Function",
+					"actions": [
+						"get",
+						"add",
+						"update",
+						"delete"
+					]
+				},
+				"oids": {
+					"object_type": "OID",
+					"actions": [
+						"get",
+						"add",
+						"update",
+						"delete"
+					]
+				}
+			},
+			"service": {
+				"services": {
+					"object_type": "Service",
+					"actions": [
+						"get",
+						"add",
+						"update",
+						"delete"
+					],
+					"children": {
+						"sdts": {
+							"actions": [
+								"get"
+							]
+						}
+					}
+				},
+				"smcheckpoints": {
+					"object_type": "SiteMonitorCheckpoint",
+					"actions": [
+						"get"
+					]
+				}
+			}
+		}
+	}
 }

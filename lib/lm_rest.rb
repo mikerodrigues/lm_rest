@@ -2,6 +2,9 @@ require 'lm_rest/version'
 require 'unirest'
 require 'json'
 
+require 'lm_rest/request_params'
+require 'lm_rest/api_client'
+
 # API Resource Objects
 require 'lm_rest/resource'
 require 'lm_rest/resources/batchjob'
@@ -18,9 +21,6 @@ require 'lm_rest/resources/sdt'
 require 'lm_rest/resources/access_log_entry'
 require 'lm_rest/resources/site_monitor_checkpoint'
 require 'lm_rest/resources/widget'
-
-require 'lm_rest/request_params'
-require 'lm_rest/api_client'
 
 class LMRest
   include APIClient
