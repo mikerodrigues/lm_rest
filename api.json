@@ -25,16 +25,9 @@
 						"update",
 						"delete"
 					],
-					"children": {
-						"datapoints": {
-							"actions": [
-								"get",
-								"add",
-								"update",
-								"delete"
-							]
-						}
-					}
+					"children": [
+						"Datapoint"
+					]
 				},
 				"functions": {
 					"object_type": "Function",
@@ -64,13 +57,10 @@
 						"update",
 						"delete"
 					],
-					"children": {
-						"sdts": {
-							"actions": [
-								"get"
-							]
-						}
-					}
+					"children":  [
+						"SDT"
+					]
+
 				},
 				"smcheckpoints": {
 					"object_type": "SiteMonitorCheckpoint",
@@ -78,7 +68,21 @@
 						"get"
 					]
 				}
+			},
+			"device": {
+				"devices": {
+					"object_type": "Device",
+					"actions": [
+						"get",
+						"add",
+						"update",
+						"delete"
+					],
+					"children": []
+				}
+
 			}
 		}
 	}
+
 }
