@@ -50,6 +50,7 @@ class LMRest
     end
   end
 
+  # Define methods based on the JSON structure
   def APIClient.setup
     api_definition_path = File.expand_path(File.join(File.dirname(__FILE__), "../../api.json"))
     api_json = JSON.parse(File.read(api_definition_path))
