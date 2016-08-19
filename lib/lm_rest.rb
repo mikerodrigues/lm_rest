@@ -4,23 +4,7 @@ require 'json'
 
 require 'lm_rest/request_params'
 require 'lm_rest/api_client'
-
-# API Resource Objects
 require 'lm_rest/resource'
-require 'lm_rest/resources/batchjob'
-require 'lm_rest/resources/datasource'
-require 'lm_rest/resources/datapoint'
-require 'lm_rest/resources/eventsource'
-require 'lm_rest/resources/function'
-require 'lm_rest/resources/graph'
-require 'lm_rest/resources/overview_graph'
-require 'lm_rest/resources/oid'
-require 'lm_rest/resources/service'
-require 'lm_rest/resources/service_group'
-require 'lm_rest/resources/sdt'
-require 'lm_rest/resources/access_log_entry'
-require 'lm_rest/resources/site_monitor_checkpoint'
-require 'lm_rest/resources/widget'
 
 class LMRest
   include APIClient

@@ -79,10 +79,18 @@
 						"delete"
 					],
 					"children": []
+				},
+				"groups": {
+					"object_type": "DeviceGroup",
+					"actions": [
+						"get",
+						"add",
+						"update",
+						"delete"
+					],
+					"children": []
 				}
-
 			}
 		}
 	}
-
 }

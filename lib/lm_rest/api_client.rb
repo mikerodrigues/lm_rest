@@ -22,7 +22,7 @@ class LMRest
       when 'add'
 
         # Define a method to add the object
-        define_method("add_#{object}") do | properties, &block |
+        define_method("add_#{singularize(object)}") do | properties, &block |
           post("#{category}/#{object}", properties, &block)
         end
 
@@ -36,7 +36,7 @@ class LMRest
       when 'delete'
 
         # Define a method to delete the object
-        define_method("delete_#{object}") do | id, &block |
+        define_method("delete_#{singularize(object)}") do | id, &block |
           get("#{category}/#{object}/#{id}", nil, &block)
         end
       end
