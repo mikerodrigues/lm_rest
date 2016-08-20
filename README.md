@@ -17,22 +17,25 @@ Or install it yourself as:
 
 `$ gem install lm_rest`
 
+## Supported API Resources
 
+Every API resource defined in the `api.json` file and its associated defined
+methods are supported, and you can easily add your own if you can't wait for me
+to update this.
+
+Each method (`get_*, add_*, update_*, delete_*`) works the same
+for each resource. Each method name follows the pattern `method_resource`.
+
+Every method except for `delete_*` will return an `LMRest::Resource` object.
+It is essentially just a PORO with dynamically created property accessors
+(constructed from the API JSON response). This makes it easy to access
+attributes, edit them, and update objects. You can get a `Hash` version of the
+object with `#to_h`.
 
 ## Usage
 
 See the example `ds_checker.rb` script in `bin` to get a better feel for how to
 use the gem.
-
-Every API resource defined in the api.json file will be available with whatever
-methods it supports. Each method (`get_*, add_*, update_*, delete_*`) works the same for
-each resource. Each method name follows the pattern `method_resource`. 
-
-Every method except for `delete_*` will return an `LMRest::Resource` object. It's
-essentially just a PORO with dynamically created property accessors
-(constructed from the API JSON response). This makes it easy to access
-attributes, edit them, and update objects. You can get a `Hash` version of the
-object with `#to_h`.
 
 ```ruby
 require 'lm_rest'
@@ -54,12 +57,11 @@ lm.get_datasources(filter: 'name:VMware*')
 
 # add a device to your account
 lm.add_device({name: 'gibson',
-	       displayName: 'The Gibson',
-	       preferredCollectorId: 1,
-	       hostGroupIds: "1,2",
-	       description: 'Big iron, heavy metal',
-	       customProperties: [{name: 'terminal', value: '23'}]})
-
+displayName: 'The Gibson',
+preferredCollectorId: 1,
+hostGroupIds: "1,2",
+description: 'Big iron, heavy metal',
+customProperties: [{name: 'terminal', value: '23'}]})
 
 
 # add_*, update_*, and delete_* methods accept LMRest::Resource objects:
