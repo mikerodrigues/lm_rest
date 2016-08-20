@@ -26,7 +26,13 @@ use the gem.
 
 Every API resource defined in the api.json file will be available with whatever
 methods it supports. Each method (`get_*, add_*, update_*, delete_*`) works the same for
-each resource. Each method name follows the pattern "method_resource". 
+each resource. Each method name follows the pattern `method_resource`. 
+
+Every method except for `delete_*` will return an `LMRest::Resource` object. It's
+essentially just a PORO with dynamically created property accessors
+(constructed from the API JSON response). This makes it easy to access
+attributes, edit them, and update objects. You can get a `Hash` version of the
+object with `#to_h`.
 
 ```ruby
 require 'lm_rest'
@@ -34,7 +40,7 @@ require 'lm_rest'
 lm = LMRest.new(company_name, user_id, password)
 
 
-# returns array of Datasource objects
+# returns array of Resource objects
 lm.get_datasources
 
 
@@ -42,7 +48,7 @@ lm.get_datasources
 lm.get_datasource(721)
 
 
-# return array of Datasource objects whose names begin with "VMware"
+# return array of Resource objects whose names begin with "VMware"
 lm.get_datasources(filter: 'name:VMware*')
 
 

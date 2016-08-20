@@ -39,10 +39,6 @@ class LMRest
       r = Unirest.delete(@api_url + uri, auth: credentials, headers: headers, parameters: params)
     end
 
-    # yield r.body if block_given?
-    # r.body
-    #
-
     response = Resource.parse(uri, r.body)
     yield response if block_given?
     response
