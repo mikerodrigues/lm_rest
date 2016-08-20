@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
 
   spec.summary       = 'API Wrapper for LogicMonitor Rest API.'
   spec.description   = 'Interact programmatically with your LogicMonitor account via the REST API.'
-  spec.homepage      = ''
+  spec.homepage      = 'https://github.com/mikerodrigues/lm_rest'
 
   # Prevent pushing this gem to RubyGems.org by setting 'allowed_push_host', or
   # delete this section to allow pushing this gem to any host.

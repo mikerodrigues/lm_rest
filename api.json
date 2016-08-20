@@ -4,12 +4,20 @@
 			"setting": {
 				"accesslogs": {
 					"object_type": "AccessLogEntry",
+					"method_names": [
+						"accesslog",
+						"accesslogs"
+					],
 					"actions": [
 						"get"
 					]
 				},
 				"batchjobs": {
 					"object_type": "Batchjob",
+					"method_names": [
+						"batchjob",
+						"batchjobs"
+					],
 					"actions": [
 						"get",
 						"add",
@@ -19,6 +27,10 @@
 				},
 				"datasources": {
 					"object_type": "Datasource",
+					"method_names": [
+						"datasource",
+						"datasources"
+					],
 					"actions": [
 						"get",
 						"add",
@@ -31,6 +43,10 @@
 				},
 				"functions": {
 					"object_type": "Function",
+					"method_names": [
+						"function",
+						"functions"
+					],
 					"actions": [
 						"get",
 						"add",
@@ -40,6 +56,10 @@
 				},
 				"oids": {
 					"object_type": "OID",
+					"method_names": [
+						"oid",
+						"oids"
+					],
 					"actions": [
 						"get",
 						"add",
@@ -51,6 +71,10 @@
 			"service": {
 				"services": {
 					"object_type": "Service",
+					"method_names": [
+						"service",
+						"services"
+					],
 					"actions": [
 						"get",
 						"add",
@@ -64,14 +88,36 @@
 				},
 				"smcheckpoints": {
 					"object_type": "SiteMonitorCheckpoint",
+					"method_names": [
+						"smcheckpoint",
+						"smcheckpoints"
+					],
 					"actions": [
 						"get"
 					]
+				},
+				"groups": {
+					"object_type": "ServiceGroup",
+					"method_names": [
+						"service_group",
+						"service_groups"
+					],
+					"actions": [
+						"get",
+						"add",
+						"update",
+						"delete"
+					],
+					"children": []
 				}
 			},
 			"device": {
 				"devices": {
 					"object_type": "Device",
+					"method_names": [
+						"device",
+						"devices"
+					],
 					"actions": [
 						"get",
 						"add",
@@ -82,6 +128,10 @@
 				},
 				"groups": {
 					"object_type": "DeviceGroup",
+					"method_names": [
+						"device_group",
+						"device_groups"
+					],
 					"actions": [
 						"get",
 						"add",

@@ -35,24 +35,27 @@ class LMRest
 
       def parse(uri, response)
         if response.is_a? String
-          warn response
+          raise response
           return
         end
-        
+
         if response['status'] != 200
-          warn response['errmsg']
+          raise response['status'].to_s + ":" + response['errmsg']
           return
         end
 
         begin
-          if response['data'].key? 'items'
-            parse_collection(response['data']['items'])
-          else
-            parse_object(response['data'])
+          if !response['data'].nil?
+            if response['data'].key? 'items'
+              parse_collection(response['data']['items'])
+            else
+              parse_object(response['data'])
+            end
           end
 
         rescue => e
           puts e
+          puts "Response: " + response
         end
       end
 
