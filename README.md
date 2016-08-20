@@ -32,6 +32,10 @@ It is essentially just a PORO with dynamically created property accessors
 attributes, edit them, and update objects. You can get a `Hash` version of the
 object with `#to_h`.
 
+Note: This library currently does not handle pagination of resources. If you
+maek a request that will return more than 300 resouces, you will need to make
+multiple calls using the `size` and `offset` request parameters.
+
 ## Usage
 
 See the example `ds_checker.rb` script in `bin` to get a better feel for how to
