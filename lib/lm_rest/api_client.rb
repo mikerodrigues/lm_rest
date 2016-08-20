@@ -72,18 +72,5 @@ class LMRest
         end
       end
     end
-
-    def self.summary
-      @@api_json['api']['categories'].each do |category, objects|
-        objects.each do |object, attributes|
-          if attributes.keys.include? "method_names"
-            puts "Resource: " + attributes['method_names'][0]
-            if attributes.keys.include? "actions"
-              puts "  Actions: " + attributes['actions'].join(", ")
-            end
-          end
-        end
-      end
-    end
   end
 end
