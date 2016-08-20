@@ -258,6 +258,4 @@ end
   propose_fixes(errors)
 
   separator
-  separator
-  separator
 end
