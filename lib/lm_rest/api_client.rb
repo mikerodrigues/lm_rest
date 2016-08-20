@@ -22,7 +22,7 @@ class LMRest
         # Define a method to fetch all objects
         define_method("get_#{method_names[1]}") do | params = {}, &block |
           # consider converting params's string keys to symbols for flexibility
-          
+
           # Hooray for pagination logic!
           if (params[:size] == 0 || params[:size].nil? || params[:size] > ITEMS_SIZE_LIMIT)
             user_size = params[:size]
