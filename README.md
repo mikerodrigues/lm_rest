@@ -25,7 +25,7 @@ See the example `ds_checker.rb` script in `bin` to get a better feel for how to
 use the gem.
 
 Every API resource defined in the api.json file will be available with whatever
-methods it supports. Each method (get, add, update, delete) works the same for
+methods it supports. Each method (`get_*, add_*, update_*, delete_*`) works the same for
 each resource. Each method name follows the pattern "method_resource". 
 
 ```ruby
