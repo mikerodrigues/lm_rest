@@ -9,9 +9,6 @@ require 'lm_rest/resource'
 class LMRest
   include APIClient
 
-  BASE_URL_PREFIX = 'https://'
-  BASE_URL_SUFFIX = '.logicmonitor.com/santaba/rest/'
-
   attr_reader :accountname, :username, :api_url
 
   def initialize(accountname, username, password)
@@ -30,34 +27,28 @@ class LMRest
     }
 
     if method == :get
-      r = Unirest.get(@api_url + uri, auth: credentials, headers: headers)
+      response = Unirest.get(@api_url + uri, auth: credentials, headers: headers)
     elsif method == :post
-      r = Unirest.post(@api_url + uri, auth: credentials, headers: headers, parameters: params)
+      response = Unirest.post(@api_url + uri, auth: credentials, headers: headers, parameters: params)
     elsif method == :put
-      r = Unirest.put(@api_url + uri, auth: credentials, headers: headers, parameters: params)
+      response = Unirest.put(@api_url + uri, auth: credentials, headers: headers, parameters: params)
     elsif method == :delete
-      r = Unirest.delete(@api_url + uri, auth: credentials, headers: headers, parameters: params)
+      response = Unirest.delete(@api_url + uri, auth: credentials, headers: headers, parameters: params)
     end
 
-    response = Resource.parse(uri, r.body)
-    yield response if block_given?
-    response
-  end
+    if response.body.is_a? String
+      raise response
+    end
 
-  def get(uri, json = nil, &block)
-    request(:get, uri, json, &block)
-  end
+    if response.body['status'] != 200
+      raise response.body['status'].to_s + ":" + response.body['errmsg']
+    end
 
-  def post(uri, json = nil, &block)
-    request(:post, uri, json, &block)
-  end
+    response.body
 
-  def put(uri, json = nil, &block)
-    request(:put, uri, json, &block)
-  end
-
-  def delete(uri, json = nil, &block)
-    request(:delete, uri, json, &block)
+    #    response = Resource.parse(r.body)
+    #    yield response if block_given?
+    #    response
   end
 
   private

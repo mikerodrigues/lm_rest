@@ -33,29 +33,19 @@ class LMRest
 
     class << self
 
-      def parse(uri, response)
-        if response.is_a? String
-          raise response
-          return
-        end
-
-        if response['status'] != 200
-          raise response['status'].to_s + ":" + response['errmsg']
-          return
-        end
-
+      def parse(body)
         begin
-          if !response['data'].nil?
-            if response['data'].key? 'items'
-              parse_collection(response['data']['items'])
+          if !body['data'].nil?
+            if body['data'].key? 'items'
+              parse_collection(body['data']['items'])
             else
-              parse_object(response['data'])
+              parse_object(body['data'])
             end
           end
 
         rescue => e
           puts e
-          puts "Response: " + response
+          puts "Response body: " + body
         end
       end
 

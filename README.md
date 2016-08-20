@@ -32,9 +32,9 @@ It is essentially just a PORO with dynamically created property accessors
 attributes, edit them, and update objects. You can get a `Hash` version of the
 object with `#to_h`.
 
-Note: This library currently does not handle pagination of resources. If you
-make a request that will return more than 300 resouces, you will need to make
-multiple calls using the `size` and `offset` request parameters.
+Note: This library handles pagination for you! Use `size` and `offset` request
+parameters and get sane results. Default `size` is the total number of existing
+objects. The default `offset` is 0.
 
 ## Usage
 
