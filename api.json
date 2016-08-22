@@ -1,146 +1,251 @@
 {
-	"api": {
-		"categories": {
-			"setting": {
-				"accesslogs": {
-					"object_type": "AccessLogEntry",
-					"method_names": [
-						"accesslog",
-						"accesslogs"
-					],
-					"actions": [
-						"get"
-					]
-				},
-				"batchjobs": {
-					"object_type": "Batchjob",
-					"method_names": [
-						"batchjob",
-						"batchjobs"
-					],
-					"actions": [
-						"get",
-						"add",
-						"update",
-						"delete"
-					]
-				},
-				"datasources": {
-					"object_type": "Datasource",
-					"method_names": [
-						"datasource",
-						"datasources"
-					],
-					"actions": [
-						"get",
-						"add",
-						"update",
-						"delete"
-					],
-					"children": [
-						"Datapoint"
-					]
-				},
-				"functions": {
-					"object_type": "Function",
-					"method_names": [
-						"function",
-						"functions"
-					],
-					"actions": [
-						"get",
-						"add",
-						"update",
-						"delete"
-					]
-				},
-				"oids": {
-					"object_type": "OID",
-					"method_names": [
-						"oid",
-						"oids"
-					],
-					"actions": [
-						"get",
-						"add",
-						"update",
-						"delete"
-					]
-				}
-			},
-			"service": {
-				"services": {
-					"object_type": "Service",
-					"method_names": [
-						"service",
-						"services"
-					],
-					"actions": [
-						"get",
-						"add",
-						"update",
-						"delete"
-					],
-					"children":  [
-						"SDT"
-					]
-
-				},
-				"smcheckpoints": {
-					"object_type": "SiteMonitorCheckpoint",
-					"method_names": [
-						"smcheckpoint",
-						"smcheckpoints"
-					],
-					"actions": [
-						"get"
-					]
-				},
-				"groups": {
-					"object_type": "ServiceGroup",
-					"method_names": [
-						"service_group",
-						"service_groups"
-					],
-					"actions": [
-						"get",
-						"add",
-						"update",
-						"delete"
-					],
-					"children": []
-				}
-			},
-			"device": {
-				"devices": {
-					"object_type": "Device",
-					"method_names": [
-						"device",
-						"devices"
-					],
-					"actions": [
-						"get",
-						"add",
-						"update",
-						"delete"
-					],
-					"children": []
-				},
-				"groups": {
-					"object_type": "DeviceGroup",
-					"method_names": [
-						"device_group",
-						"device_groups"
-					],
-					"actions": [
-						"get",
-						"add",
-						"update",
-						"delete"
-					],
-					"children": []
-				}
-			}
-		}
+	"AccessLogEntry": {
+		"url": "/setting/accesslogs",
+		"method_names": {
+			"singular": "accesslog",
+			"plural": "accesslogs"
+		},
+		"actions": [
+			"get"
+		]
+	},
+	"BatchJob": {
+		"url": "/setting/batchjobs",
+		"method_names": {
+			"singular": "batchjob",
+			"plural": "batchjobs"
+		},
+		"actions": [
+			"get",
+			"add",
+			"update",
+			"delete"
+		]
+	},
+	"Collector": {
+		"url": "/setting/collectors",
+		"method_names": {
+			"singular": "collector",
+			"plural": "collectors"
+		},
+		"actions": [
+			"get",
+			"add",
+			"update",
+			"delete"
+		]
+	},
+	"Datasource": {
+		"url": "/setting/datasources",
+		"method_names": {
+			"singular": "datasource",
+			"plural": "datasources"
+		},
+		"actions": [
+			"get",
+			"add",
+			"update",
+			"delete"
+		],
+		"children": []
+	},
+	"Eventsource": {
+		"url": "/setting/eventsources",
+		"method_names": {
+			"singular": "datasource",
+			"plural": "datasources"
+		},
+		"actions": [
+			"get",
+			"add",
+			"update",
+			"delete"
+		]
+	},
+	"Function": {
+		"url": "/setting/functions",
+		"method_names": {
+			"singular": "function",
+			"plural": "functions"
+		},
+		"actions": [
+			"get",
+			"add",
+			"update",
+			"delete"
+		]
+	},
+	"OID": {
+		"url": "/setting/oids",
+		"method_names": {
+			"singular": "oid",
+			"plural": "oids"
+		},
+		"actions": [
+			"get",
+			"add",
+			"update",
+			"delete"
+		]
+	},
+	"Service": {
+		"url": "/service/services",
+		"method_names": {
+			"singular": "service",
+			"plural": "services"
+		},
+		"actions": [
+			"get",
+			"add",
+			"update",
+			"delete"
+		],
+		"children":  [
+			"SDT"
+		],
+		"parent_id_key": "serviceId"
+	},
+	"SiteMonitorCheckpoint": {
+		"url": "/service/smcheckpoints",
+		"method_names": {
+			"singular": "smcheckpoint",
+			"plural": "smcheckpoints"
+		},
+		"actions": [
+			"get"
+		]
+	},
+	"ServiceGroup": {
+		"url": "/service/groups",
+		"method_names": {
+			"singular": "service_group",
+			"plural": "service_groups"
+		},
+		"actions": [
+			"get",
+			"add",
+			"update",
+			"delete"
+		],
+		"children": [
+			"SDT"
+		],
+		"parent_id_key": "serviceGroupId"
+	},
+	"Device": {
+		"url": "/device/devices",
+		"method_names": {
+			"singular": "device",
+			"plural": "devices"
+		},
+		"actions": [
+			"get",
+			"add",
+			"update",
+			"delete"
+		],
+		"children": []
+	},
+	"DeviceGroup": {
+		"url": "/device/groups",
+		"method_names": {
+			"singular": "device_group",
+			"plural": "device_groups"
+		},
+		"actions": [
+			"get",
+			"add",
+			"update",
+			"delete"
+		],
+		"children": [
+			"SDT"
+		],
+		"parent_id_key": "deviceGroupId"
+	},
+	"SDT": {
+		"url": "/sdt/sdts",
+		"method_names": {
+			"singular": "sdt",
+			"plural": "sdts"
+		},
+		"actions": [
+			"get",
+			"add",
+			"update",
+			"delete"
+		],
+		"children": []
+	},
+	"Widget": {
+		"url": "/dashboard/widgets",
+		"method_names": {
+			"singular": "widget",
+			"plural": "widgets"
+		},
+		"actions": [
+			"get",
+			"add",
+			"update",
+			"delete"
+		],
+		"children": []
+	},
+	"Report": {
+		"url": "/report/reports",
+		"method_names": {
+			"singular": "report",
+			"plural": "reports"
+		},
+		"actions": [
+			"get",
+			"add",
+			"update",
+			"delete"
+		],
+		"children": []
+	},
+	"Alert": {
+		"url": "/alert/alerts",
+		"method_names": {
+			"singular": "alert",
+			"plural": "alerts"
+		},
+		"actions": [
+			"get"
+		],
+		"children": []
+	},
+	"AlertChain": {
+		"url": "/alert/chains",
+		"method_names": {
+			"singular": "alert_chain",
+			"plural": "alert_chains"
+		},
+		"actions": [
+			"get",
+			"add",
+			"update",
+			"delete"
+		],
+		"children": []
+	},
+	"AlertStatus": {
+		"url": "/alert/stat",
+		"method_names": {
+			"singular": "alert_status"
+		},
+		"actions": [
+			"get"
+		]
+	},
+	"Version": {
+		"url": "/version",
+		"method_names": {
+			"singular": "version"
+		},
+		"actions": [
+			"get"
+		]
 	}
 }
