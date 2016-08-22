@@ -1,10 +1,13 @@
 require 'json'
+require 'date'
+require 'base64'
+require 'openssl'
 require 'unirest'
 require 'lm_rest/resource'
 require 'lm_rest/request_params'
 
-class LMRest
-  module APIClient
+module LMRest
+  class APIClient
     include RequestParams
 
     ITEMS_SIZE_LIMIT = 300
@@ -13,38 +16,76 @@ class LMRest
     BASE_URL_PREFIX = 'https://'
     BASE_URL_SUFFIX = '.logicmonitor.com/santaba/rest'
 
-    @@api_definition_path = File.expand_path(File.join(File.dirname(__FILE__), "../../api.json"))
-    @@api_json = JSON.parse(File.read(@@api_definition_path))
+    #    @@api_definition_path = File.expand_path(File.join(File.dirname(__FILE__), "../../api.json"))
+    #    @@api_json = JSON.parse(File.read(@@api_definition_path))
+
+
+    attr_reader :company, :user, :api_url
+
+    def initialize(company:, user: nil, password: nil, access_id: nil, access_key: nil)
+      APIClient.setup
+      @company = company
+
+      if (user && password)
+        @credentials = { user: user, password: password }
+      elsif (access_id && access_key)
+        @api_token = {access_id: access_id, access_key: access_key}
+      end
+
+      @api_url     = BASE_URL_PREFIX + company + BASE_URL_SUFFIX
+    end
 
     def request(method, uri, json = nil)
       params = json.to_json if json
-      headers = {
-        'Content-Type' => 'application/json'
-      }
+      if api_token.nil?
+        headers = {
+          'Content-Type' => 'application/json'
+        }
+      else
+        headers = {
+          'Content-Type' => 'application/json'
+        }
 
-      if method == :get
-        response = Unirest.get(@api_url + uri, auth: credentials, headers: headers)
-      elsif method == :post
-        response = Unirest.post(@api_url + uri, auth: credentials, headers: headers, parameters: params)
-      elsif method == :put
-        response = Unirest.put(@api_url + uri, auth: credentials, headers: headers, parameters: params)
-      elsif method == :delete
-        response = Unirest.delete(@api_url + uri, auth: credentials, headers: headers, parameters: params)
+        time = DateTime.now.strftime('%Q')
+        http_method = method.to_s.upcase
+        data = json ? json.to_json.to_s : ""
+        resource_path = uri.split("/")[0..2].join("/")
+
+        message =  "#{http_method}#{time}#{data}#{resource_path}"
+
+        signature = Base64.strict_encode64(
+          OpenSSL::HMAC.hexdigest(
+            OpenSSL::Digest.new('sha256'),
+            api_token[:access_key],
+            message
+          )
+        )
+
+        headers['Authorization'] = "LMv1 #{api_token[:access_id]}:#{signature}:#{time}"
+binding.pry
+      end
+
+      case method
+      when :get
+        response = Unirest.get(api_url + uri, auth: credentials, headers: headers)
+      when :post
+        response = Unirest.post(api_url + uri, auth: credentials, headers: headers, parameters: params)
+      when :put
+        response = Unirest.put(api_url + uri, auth: credentials, headers: headers, parameters: params)
+      when :delete
+        response = Unirest.delete(api_url + uri, auth: credentials, headers: headers, parameters: params)
+      end
+
+      if response.code != 200
+        puts response.code.to_s + ":" + response.body
+        raise
       end
 
       if response.body.is_a? String
-        raise response
-      end
-
-      if response.body['status'] != 200
-        raise response.body['status'].to_s + ":" + response.body['errmsg']
+        raise
       end
 
       response.body
-
-      #    response = Resource.parse(r.body)
-      #    yield response if block_given?
-      #    response
     end
 
     def paginate(uri, params)
@@ -66,7 +107,6 @@ class LMRest
           user_size = total
         end
 
-        # TODO: if pages_remainging == 0, yield to the block
         pages_remaining = ((user_size - ITEMS_SIZE_LIMIT).to_f/ITEMS_SIZE_LIMIT).ceil
 
         pages_remaining.times do |page|
@@ -123,7 +163,7 @@ class LMRest
               when 2
                 Resource.parse request(:get, "#{resource_url}/#{args[0]}#{RequestParams.parameterize(args[1])}", nil)
               else
-                raise ArgumentError.new("wrong number for arguments (#{args.count} for 0..2)")
+                raise ArgumentError.new("wrong number for arguments (#{args.count} for 1..2)")
               end
             end
           end
@@ -159,7 +199,7 @@ class LMRest
               id = id.id
               Resource.parse request(:delete, "#{resource_url}/#{id}", nil)
             else
-              Resource.parse delete(:delete, "#{resource_url}/#{id}", nil)
+              Resource.parse request(:delete, "#{resource_url}/#{id}", nil)
             end
           end
         end
@@ -203,14 +243,35 @@ class LMRest
 
     # Define methods based on the JSON structure
     def self.setup
+      @@api_definition_path = File.expand_path(File.join(File.dirname(__FILE__), "../../api.json"))
+      @@api_json = JSON.parse(File.read(@@api_definition_path))
       @@api_json.each do |resource_type, attributes|
         define_action_methods(resource_type, attributes) if attributes['actions']
         define_child_methods(resource_type, attributes) if attributes['children']
       end
     end
 
-    def ack_collector_down(id)
-      Resource.parse request(:post, "/setting/collectors/#{id}/ackdown", nil)
+    # Ack a down collector, pass the ID and a comment
+    def ack_collector_down(id, comment)
+      if id.class == LMRest::Resource
+        Resource.parse request(:post, "/setting/collectors/#{id.id}/ackdown", {comment: comment})
+      else
+        Resource.parse request(:post, "/setting/collectors/#{id}/ackdown", {comment: comment})
+      end
     end
+
+    # run a report
+    def run_report(id, type = "generateReport")
+      if id.class == LMRest::Resource
+        Resource.parse request(:post, "/functions", {reportId: id.id, type: type})
+      else
+        Resource.parse request(:post, "/functions", {reportId: id, type: type})
+      end
+    end
+
+    private
+
+    attr_accessor :credentials
+    attr_accessor :api_token
   end
 end

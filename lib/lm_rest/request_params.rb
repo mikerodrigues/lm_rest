@@ -1,4 +1,4 @@
-class LMRest
+module LMRest
   module RequestParams
     def self.parameterize(params_hash)
       unless params_hash.empty?

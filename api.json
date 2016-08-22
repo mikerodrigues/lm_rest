@@ -52,8 +52,8 @@
 	"Eventsource": {
 		"url": "/setting/eventsources",
 		"method_names": {
-			"singular": "datasource",
-			"plural": "datasources"
+			"singular": "eventsource",
+			"plural": "eventsources"
 		},
 		"actions": [
 			"get",
@@ -88,6 +88,19 @@
 			"delete"
 		]
 	},
+	"RecipientGroups": {
+		"url": "/setting/recipientgroups",
+		"method_names": {
+			"singular": "recipient_group",
+			"plural": "recipient_groups"
+		},
+		"actions": [
+			"get",
+			"add",
+			"update",
+			"delete"
+		]
+	},
 	"Service": {
 		"url": "/service/services",
 		"method_names": {
@@ -102,8 +115,7 @@
 		],
 		"children":  [
 			"SDT"
-		],
-		"parent_id_key": "serviceId"
+		]
 	},
 	"SiteMonitorCheckpoint": {
 		"url": "/service/smcheckpoints",
@@ -129,8 +141,46 @@
 		],
 		"children": [
 			"SDT"
-		],
-		"parent_id_key": "serviceGroupId"
+		]
+	},
+	"User": {
+		"url": "/setting/admins",
+		"method_names": {
+			"singular": "user",
+			"plural": "users"
+		},
+		"actions": [
+			"get",
+			"add",
+			"update",
+			"delete"
+		]
+	},
+	"Role": {
+		"url": "/setting/roles",
+		"method_names": {
+			"singular": "role",
+			"plural": "roles"
+		},
+		"actions": [
+			"get",
+			"add",
+			"update",
+			"delete"
+		]
+	},
+	"APIToken": {
+		"url": "/setting/apiTokens",
+		"method_names": {
+			"singular": "api_token",
+			"plural": "api_tokens"
+		},
+		"actions": [
+			"get",
+			"add",
+			"update",
+			"delete"
+		]
 	},
 	"Device": {
 		"url": "/device/devices",
@@ -160,14 +210,27 @@
 		],
 		"children": [
 			"SDT"
-		],
-		"parent_id_key": "deviceGroupId"
+		]
 	},
 	"SDT": {
 		"url": "/sdt/sdts",
 		"method_names": {
 			"singular": "sdt",
 			"plural": "sdts"
+		},
+		"actions": [
+			"get",
+			"add",
+			"update",
+			"delete"
+		],
+		"children": []
+	},
+	"Dashboard": {
+		"url": "/dashboard/dashboards",
+		"method_names": {
+			"singular": "dashboard",
+			"plural": "dashboards"
 		},
 		"actions": [
 			"get",
@@ -217,10 +280,38 @@
 		"children": []
 	},
 	"AlertChain": {
-		"url": "/alert/chains",
+		"url": "/setting/alert/chains",
 		"method_names": {
 			"singular": "alert_chain",
 			"plural": "alert_chains"
+		},
+		"actions": [
+			"get",
+			"add",
+			"update",
+			"delete"
+		],
+		"children": []
+	},
+	"AlertRule": {
+		"url": "/setting/alert/rules",
+		"method_names": {
+			"singular": "alert_rule",
+			"plural": "alert_rules"
+		},
+		"actions": [
+			"get",
+			"add",
+			"update",
+			"delete"
+		],
+		"children": []
+	},
+	"ExternalAlerts": {
+		"url": "/setting/alert/internalalerts",
+		"method_names": {
+			"singular": "external_alert",
+			"plural": "external_alerts"
 		},
 		"actions": [
 			"get",

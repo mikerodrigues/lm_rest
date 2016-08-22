@@ -1,10 +1,9 @@
 require 'json'
 
-class LMRest
+module LMRest
   class Resource
 
     def initialize(properties)
-      @properties = properties.keys
       properties.each do |key, value|
         instance_variable_set(:"@#{key}", value)
         define_singleton_method(key.intern) { instance_variable_get("@#{key}") }
@@ -12,15 +11,6 @@ class LMRest
           instance_variable_set("@#{key}", new_value)
         end
       end
-    end
-
-    def to_h
-      hash = {}
-      @properties.map do |key|
-        hash[key] = send(key.intern)
-      end
-
-      hash
     end
 
     class << self

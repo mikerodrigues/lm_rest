@@ -1,21 +1,7 @@
 require 'lm_rest/version'
 require 'lm_rest/api_client'
+require 'lm_rest/resource'
+require 'lm_rest/request_params'
 
-class LMRest
-  include APIClient
-
-  attr_reader :accountname, :username, :api_url
-
-  def initialize(accountname, username, password)
-    APIClient.setup
-    @accountname = accountname
-    @username    = username
-    @password    = password
-    @api_url     = BASE_URL_PREFIX + accountname + BASE_URL_SUFFIX
-    @credentials = { user: username, password: password }
-  end
-
-  private
-
-  attr_accessor :credentials
+module LMRest
 end
