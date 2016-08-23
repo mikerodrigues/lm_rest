@@ -112,6 +112,10 @@ lm.get_version
 lm.ack_collector_down(id, comment)
 
 
+# Run Reports!
+lm.run_report(id)
+
+
 ```
 
 
