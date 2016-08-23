@@ -74,11 +74,11 @@ lm.get_datasources(filter: 'name:VMware*')
 
 # add a device to your account
 lm.add_device({name: 'gibson',
-	       displayName: 'The Gibson',
-	       preferredCollectorId: 1,
-	       hostGroupIds: "1,2",
-	       description: 'Big iron, heavy metal',
-	       customProperties: [{name: 'terminal', value: '23'}]})
+               displayName: 'The Gibson',
+               preferredCollectorId: 1,
+               hostGroupIds: "1,2",
+               description: 'Big iron, heavy metal',
+               customProperties: [{name: 'terminal', value: '23'}]})
 
 
 # add_*, update_*, and delete_* methods accept LMRest::Resource objects:
