@@ -44,7 +44,20 @@ use the gem.
 ```ruby
 require 'lm_rest'
 
-lm = LMRest.new(company_name, user_id, password)
+
+# Authenticate with an API token (preferred):
+credential = {company: 'company',
+	      access_key:'api_access_key',
+              access_id:'api_access_id'}
+
+
+# Authenticate with Basic Auth (not preferred):
+credential = {company: 'company',
+	      user: 'user',
+	      password: 'password
+
+# Create an instance of the API Client
+lm = LMRest::APIClient.new(credential)
 
 
 # returns array of Resource objects
@@ -84,6 +97,21 @@ lm.delete_device(device)
 
 # add the device back
 lm.add_device(device)
+
+
+
+# Get your Santaba version info
+lm.get_version
+
+
+# ACK Collector Down Alerts!
+#
+# You can also pass an Alert Resource instead of an id but the comment is
+# mandatory!
+
+lm.ack_collector_down(id, comment)
+
+
 ```
 
 
