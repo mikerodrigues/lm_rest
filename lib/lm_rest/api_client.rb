@@ -16,10 +16,6 @@ module LMRest
     BASE_URL_PREFIX = 'https://'
     BASE_URL_SUFFIX = '.logicmonitor.com/santaba/rest'
 
-    #    @@api_definition_path = File.expand_path(File.join(File.dirname(__FILE__), "../../api.json"))
-    #    @@api_json = JSON.parse(File.read(@@api_definition_path))
-
-
     attr_reader :company, :user, :api_url
 
     def initialize(company:, user: nil, password: nil, access_id: nil, access_key: nil)
@@ -35,45 +31,73 @@ module LMRest
       @api_url     = BASE_URL_PREFIX + company + BASE_URL_SUFFIX
     end
 
-    def request(method, uri, json = nil)
-      params = json.to_json if json
+    def uri_to_resource_uri(uri)
+      # Split the URL down to the resource
+      #
+      # Here's an example of the process:
+      # /setting/datasources/1/graphs?key-value&
+      # /setting/datasources/1/graphs
+      # /setting/datasources/
+      # /setting/datasources
+      #
+      uri.split("?")[0].split("/").join("/")
+    end
+
+    def sign(method, uri, data = nil)
+      resource_uri = uri_to_resource_uri(uri)
+
+      time = DateTime.now.strftime('%Q')
+      http_method = method.to_s.upcase
+      if data.nil? || data.empty?
+        data = ''
+      else
+        data = data.to_json.to_s
+      end
+
+      message =  "#{http_method}#{time}#{data}#{resource_uri}"
+
+      signature = Base64.strict_encode64(
+        OpenSSL::HMAC.hexdigest(
+          OpenSSL::Digest.new('sha256'),
+          api_token[:access_key],
+          message
+        )
+      )
+
+#      puts "Resource uri: " + resource_uri
+#      puts "Timestamp: " + time
+#      puts "Method: " + http_method
+#      puts "Data: " + (data ? data : '')
+#      puts "Signature: " + signature
+#      puts "LMv1 #{api_token[:access_id]}:#{signature}:#{time}"
+
+      "LMv1 #{api_token[:access_id]}:#{signature}:#{time}"
+    end
+
+    def request(method, uri, params={})
       if api_token.nil?
         headers = {
           'Content-Type' => 'application/json'
         }
       else
-        headers = {
-          'Content-Type' => 'application/json'
-        }
-
-        time = DateTime.now.strftime('%Q')
-        http_method = method.to_s.upcase
-        data = json ? json.to_json.to_s : ""
-        resource_path = uri.split("/")[0..2].join("/")
-
-        message =  "#{http_method}#{time}#{data}#{resource_path}"
-
-        signature = Base64.strict_encode64(
-          OpenSSL::HMAC.hexdigest(
-            OpenSSL::Digest.new('sha256'),
-            api_token[:access_key],
-            message
-          )
-        )
-
-        headers['Authorization'] = "LMv1 #{api_token[:access_id]}:#{signature}:#{time}"
-binding.pry
+        headers = {}
+        headers['Authorization'] = sign(method, uri, params)
+        headers['Content-Type'] = 'application/json'
       end
 
+      url = api_url + uri
+
+      json_params = params.to_json
+ 
       case method
       when :get
-        response = Unirest.get(api_url + uri, auth: credentials, headers: headers)
+        response = Unirest.get(url, auth: credentials, headers: headers)
       when :post
-        response = Unirest.post(api_url + uri, auth: credentials, headers: headers, parameters: params)
+        response = Unirest.post(url, auth: credentials, headers: headers, parameters: json_params)
       when :put
-        response = Unirest.put(api_url + uri, auth: credentials, headers: headers, parameters: params)
+        response = Unirest.put(url, auth: credentials, headers: headers, parameters: json_params)
       when :delete
-        response = Unirest.delete(api_url + uri, auth: credentials, headers: headers, parameters: params)
+        response = Unirest.delete(url, auth: credentials, headers: headers)
       end
 
       if response.code != 200
@@ -133,13 +157,13 @@ binding.pry
     def self.define_action_methods(resource_type, attributes)
       singular = attributes['method_names']['singular']
       plural = attributes['method_names']['plural']
-      resource_url = attributes['url']
+      resource_uri = attributes['url']
 
       attributes['actions'].each do |action|
         case action
         when 'get'
 
-          uri = lambda { |params| "#{resource_url}/#{RequestParams.parameterize(params)}"}
+          uri = lambda { |params| "#{resource_uri}#{RequestParams.parameterize(params)}"}
 
           unless plural.nil?
             # Define a method to fetch multiple resources with optional params
@@ -157,11 +181,11 @@ binding.pry
             define_method("get_#{singular}") do |*args|
               case args.size
               when 0
-                Resource.parse request(:get, "#{resource_url}", nil)
+                Resource.parse request(:get, "#{resource_uri}", nil)
               when 1
-                Resource.parse request(:get, "#{resource_url}/#{args[0]}", nil)
+                Resource.parse request(:get, "#{resource_uri}/#{args[0]}", nil)
               when 2
-                Resource.parse request(:get, "#{resource_url}/#{args[0]}#{RequestParams.parameterize(args[1])}", nil)
+                Resource.parse request(:get, "#{resource_uri}/#{args[0]}#{RequestParams.parameterize(args[1])}", nil)
               else
                 raise ArgumentError.new("wrong number for arguments (#{args.count} for 1..2)")
               end
@@ -173,9 +197,9 @@ binding.pry
           # Define a method to add a new resource to the account
           define_method("add_#{singular}") do |properties|
             if properties.class == LMRest::Resource
-              Resource.parse request(:post, "#{resource_url}", properties.to_h)
+              Resource.parse request(:post, "#{resource_uri}", properties.to_h)
             else
-              Resource.parse request(:post, "#{resource_url}", properties)
+              Resource.parse request(:post, "#{resource_uri}", properties)
             end
           end
 
@@ -184,10 +208,9 @@ binding.pry
           # Define a method to update a resource
           define_method("update_#{singular}") do |id, properties = {}|
             if id.class == LMRest::Resource
-              id = id.id
-              Resource.parse request(:put, "#{resource_url}/#{id}", id.to_h)
+              Resource.parse request(:put, "#{resource_uri}/#{id.id}", id.to_h)
           else
-            Resource.parse request(:put, "#{resource_url}/#{id}", properties)
+            Resource.parse request(:put, "#{resource_uri}/#{id}", properties)
           end
           end
 
@@ -197,9 +220,9 @@ binding.pry
           define_method("delete_#{singular}") do |id|
             if id.class == LMRest::Resource
               id = id.id
-              Resource.parse request(:delete, "#{resource_url}/#{id}", nil)
+              Resource.parse request(:delete, "#{resource_uri}/#{id}", nil)
             else
-              Resource.parse request(:delete, "#{resource_url}/#{id}", nil)
+              Resource.parse request(:delete, "#{resource_uri}/#{id}", nil)
             end
           end
         end
@@ -209,7 +232,7 @@ binding.pry
     def self.define_child_methods(resource_type, attributes)
       parent_singular = attributes['method_names']['singular']
       parent_plural = attributes['method_names']['plural']
-      parent_resource_url = attributes['url']
+      parent_resource_uri = attributes['url']
       parent_id = attributes['parent_id_key']
       children = attributes['children']
 
@@ -222,14 +245,14 @@ binding.pry
 
         child_singular = child['method_names']['singular']
         child_plural = child['method_names']['plural']
-        child_resource_url = attributes['url'].split("/").last
+        child_resource_uri = attributes['url'].split("/").last
 
         child['actions'].each do |action|
           case action
           when 'get'
 
             define_method("get_#{parent_singular}_#{child_plural}") do |id, params = {}, &block|
-            uri = lambda { |params| "#{parent_resource_url}/#{id}/#{child['method_names']['plural']}#{RequestParams.parameterize(params)}" }
+            uri = lambda { |params| "#{parent_resource_uri}/#{id}/#{child['method_names']['plural']}#{RequestParams.parameterize(params)}" }
             Resource.parse paginate(uri, params)
             end
 
