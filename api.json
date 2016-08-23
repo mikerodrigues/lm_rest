@@ -330,6 +330,25 @@
 			"get"
 		]
 	},
+	"Messages": {
+		"url": "/setting/messages",
+		"method_names": {
+			"singular": "message",
+			"plural": "messages"
+		},
+		"actions": [
+			"get"
+		]
+	},
+	"Timezone": {
+		"url": "/setting/timezone",
+		"method_names": {
+			"singular": "timezone"
+		},
+		"actions": [
+			"get"
+		]
+	},
 	"Version": {
 		"url": "/version",
 		"method_names": {
