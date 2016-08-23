@@ -47,14 +47,14 @@ require 'lm_rest'
 
 # Authenticate with an API token (preferred):
 credential = {company: 'company',
-	      access_key:'api_access_key',
+              access_key:'api_access_key',
               access_id:'api_access_id'}
 
 
 # Authenticate with Basic Auth (not preferred):
 credential = {company: 'company',
-	      user: 'user',
-	      password: 'password
+              user: 'user',
+              password: 'password'}
 
 # Create an instance of the API Client
 lm = LMRest::APIClient.new(credential)
