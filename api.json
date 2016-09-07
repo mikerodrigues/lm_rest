@@ -30,7 +30,6 @@
 		},
 		"actions": [
 			"get",
-			"add",
 			"update",
 			"delete"
 		]
