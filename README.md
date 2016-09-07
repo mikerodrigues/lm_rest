@@ -1,5 +1,6 @@
 # LMRest
 
+A Ruby gem for the LogicMonitor REST API.
 
 ## Installation
 
@@ -128,4 +129,4 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/mikerodrigues/lm_rest.
+Bug reports and pull requests are welcome.
