@@ -10,7 +10,7 @@ module LMRest
   class APIClient
     include RequestParams
 
-    ITEMS_SIZE_LIMIT = 300
+    ITEMS_SIZE_LIMIT = 1000
     ITEMS_SIZE_DEFAULT = 50
 
     BASE_URL_PREFIX = 'https://'
@@ -44,10 +44,13 @@ module LMRest
     end
 
     def sign(method, uri, data = nil)
+
       resource_uri = uri_to_resource_uri(uri)
 
       time = DateTime.now.strftime('%Q')
+
       http_method = method.to_s.upcase
+
       if data.nil? || data.empty?
         data = ''
       else
@@ -64,31 +67,26 @@ module LMRest
         )
       )
 
-#      puts "Resource uri: " + resource_uri
-#      puts "Timestamp: " + time
-#      puts "Method: " + http_method
-#      puts "Data: " + (data ? data : '')
-#      puts "Signature: " + signature
-#      puts "LMv1 #{api_token[:access_id]}:#{signature}:#{time}"
-
       "LMv1 #{api_token[:access_id]}:#{signature}:#{time}"
     end
 
     def request(method, uri, params={})
       if api_token.nil?
         headers = {
-          'Content-Type' => 'application/json'
+          'Content-Type' => 'application/json',
         }
       else
         headers = {}
         headers['Authorization'] = sign(method, uri, params)
         headers['Content-Type'] = 'application/json'
+        headers['Accept'] = 'application/json'
       end
 
       url = api_url + uri
+      #puts "URL: " + url
 
       json_params = params.to_json
- 
+
       case method
       when :get
         response = Unirest.get(url, auth: credentials, headers: headers)
@@ -106,50 +104,83 @@ module LMRest
       end
 
       if response.body.is_a? String
-        raise
+        puts response.body
+        # raise
       end
 
       response.body
     end
 
+    # Handles making multiple requests to the API if pagination is necessary.
+    # Pagination is transparent, and simplifies requests that result in more
+    # than ITEMS_SIZE_LIMIT being returned.
+    #
+    # If you need to walk through resources page-by-page manullay, use the
+    # request() method with the 'offset' and 'size' params
+    #
     def paginate(uri, params)
+
       # Hooray for pagination logic!
       if (params[:size] == 0 || params[:size].nil? || params[:size] > ITEMS_SIZE_LIMIT)
+        # save user-entered size in a param for use later
         user_size = params[:size]
+
+        # set our size param to the max
         params[:size] = ITEMS_SIZE_LIMIT
+
+        # Set our offset to grab the first page of results 
         params[:offset] ||= 0
 
+        # make the initial request
         body = request(:get, uri.call(params), nil)
 
+        # pull the actual items out of the request body and into our
+        # item_collector while we build up the items list
         item_collector = body['data']['items']
 
+        # The API sends the total number of objects back in the first request.
+        # We need this to determine how many more pages to pull
         total = body['data']['total']
 
+        # If user didn't pass size param, set it to total
+        # This just means you'll get all items if not specifying a size
         user_size ||= total
 
+        # If the user passed a size larger than what's available, set it to
+        # total to retrieve all items
         if user_size > total
           user_size = total
         end
-
+        
+        # calculate the remaining number of items (after first request)
+        # then use that to figure out how many more times we need to call
+        # request() to get all the items, then do it
         pages_remaining = ((user_size - ITEMS_SIZE_LIMIT).to_f/ITEMS_SIZE_LIMIT).ceil
 
         pages_remaining.times do |page|
-          params[:offset] += ITEMS_SIZE_LIMIT
 
+          # Increment the offset by the limit to get the next page
+          params[:offset] += ITEMS_SIZE_LIMIT
+          
+          # if this is the last page, get the remainder
           if page == pages_remaining - 1
             params[:size]  = user_size%ITEMS_SIZE_LIMIT
           else
-            params[:size] += ITEMS_SIZE_LIMIT
+            # else, get a whole page
+            params[:size] = ITEMS_SIZE_LIMIT
           end
 
+          # make a subsequent request with modified params
           body = request(:get, uri.call(params), nil)
 
+          # add these items to our item_collector
           item_collector += body['data']['items']
         end
 
         body['data']['items'] = item_collector
         body
       else
+        # No pagination required, just request the page
         request(:get, uri.call(params), nil)
       end
     end
