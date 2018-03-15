@@ -61,6 +61,32 @@
 			"delete"
 		]
 	},
+	"Propertysource": {
+		"url": "/setting/propertyrules",
+		"method_names": {
+			"singular": "propertysource",
+			"plural": "propertysources"
+		},
+		"actions": [
+			"get",
+			"add",
+			"update",
+			"delete"
+		]
+	},
+	"Configsource": {
+		"url": "/setting/configsources",
+		"method_names": {
+			"singular": "configsource",
+			"plural": "configsources"
+		},
+		"actions": [
+			"get",
+			"add",
+			"update",
+			"delete"
+		]
+	},
 	"Function": {
 		"url": "/setting/functions",
 		"method_names": {
