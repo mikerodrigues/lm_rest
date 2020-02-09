@@ -23,12 +23,10 @@ module LMRest
 
       def parse(body)
         begin
-          if !body['data'].nil?
-            if body['data'].key? 'items'
-              parse_collection(body['data']['items'])
-            else
-              parse_object(body['data'])
-            end
+          if body.key? 'items'
+            parse_collection(body['items'])
+          else
+            parse_object(body)
           end
 
         rescue => e

@@ -1,8 +1,8 @@
-require 'json'
 require 'date'
 require 'base64'
 require 'openssl'
 require 'unirest'
+require 'json'
 require 'lm_rest/resource'
 require 'lm_rest/request_params'
 
@@ -16,18 +16,13 @@ module LMRest
     BASE_URL_PREFIX = 'https://'
     BASE_URL_SUFFIX = '.logicmonitor.com/santaba/rest'
 
-    attr_reader :company, :user, :api_url
+    attr_reader :company, :api_url, :access_id
 
-    def initialize(company:, user: nil, password: nil, access_id: nil, access_key: nil)
+    def initialize(company = nil, access_id =  nil, access_key = nil)
       APIClient.setup
-      @company = company
-
-      if (user && password)
-        @credentials = { user: user, password: password }
-      elsif (access_id && access_key)
-        @api_token = {access_id: access_id, access_key: access_key}
-      end
-
+      @company     = company
+      @access_id   = access_id
+      @access_key  = access_key
       @api_url     = BASE_URL_PREFIX + company + BASE_URL_SUFFIX
     end
 
@@ -62,34 +57,30 @@ module LMRest
       signature = Base64.strict_encode64(
         OpenSSL::HMAC.hexdigest(
           OpenSSL::Digest.new('sha256'),
-          api_token[:access_key],
+          access_key,
           message
         )
       )
 
-      "LMv1 #{api_token[:access_id]}:#{signature}:#{time}"
+      "LMv1 #{access_id}:#{signature}:#{time}"
     end
 
     def request(method, uri, params={})
-      if api_token.nil?
-        headers = {
-          'Content-Type' => 'application/json',
-        }
-      else
-        headers = {}
-        headers['Authorization'] = sign(method, uri, params)
-        headers['Content-Type'] = 'application/json'
-        headers['Accept'] = 'application/json'
-      end
+      headers = {}
+      headers['Authorization'] = sign(method, uri, params)
+      headers['Content-Type'] = 'application/json'
+      headers['Accept'] = 'application/json, text/javascript'
+      headers['X-version'] = '2'
 
       url = api_url + uri
       #puts "URL: " + url
+      #puts headers
 
       json_params = params.to_json
 
       case method
       when :get
-        response = Unirest.get(url, auth: credentials, headers: headers)
+        response = Unirest.get(url, headers: headers)
       when :post
         response = Unirest.post(url, auth: credentials, headers: headers, parameters: json_params)
       when :put
@@ -99,7 +90,7 @@ module LMRest
       end
 
       if response.code != 200
-        puts response.code.to_s + ":" + response.body
+        puts response.code.to_s + ":" + response.body.to_s
         raise
       end
 
@@ -136,11 +127,11 @@ module LMRest
 
         # pull the actual items out of the request body and into our
         # item_collector while we build up the items list
-        item_collector = body['data']['items']
+        item_collector = body['items']
 
         # The API sends the total number of objects back in the first request.
         # We need this to determine how many more pages to pull
-        total = body['data']['total']
+        total = body['total']
 
         # If user didn't pass size param, set it to total
         # This just means you'll get all items if not specifying a size
@@ -151,7 +142,7 @@ module LMRest
         if user_size > total
           user_size = total
         end
-        
+
         # calculate the remaining number of items (after first request)
         # then use that to figure out how many more times we need to call
         # request() to get all the items, then do it
@@ -161,7 +152,7 @@ module LMRest
 
           # Increment the offset by the limit to get the next page
           params[:offset] += ITEMS_SIZE_LIMIT
-          
+
           # if this is the last page, get the remainder
           if page == pages_remaining - 1
             params[:size]  = user_size%ITEMS_SIZE_LIMIT
@@ -174,10 +165,10 @@ module LMRest
           body = request(:get, uri.call(params), nil)
 
           # add these items to our item_collector
-          item_collector += body['data']['items']
+          item_collector += body['items']
         end
 
-        body['data']['items'] = item_collector
+        body['items'] = item_collector
         body
       else
         # No pagination required, just request the page
@@ -240,9 +231,9 @@ module LMRest
           define_method("update_#{singular}") do |id, properties = {}|
             if id.class == LMRest::Resource
               Resource.parse request(:put, "#{resource_uri}/#{id.id}", id.to_h)
-          else
-            Resource.parse request(:put, "#{resource_uri}/#{id}", properties)
-          end
+            else
+              Resource.parse request(:put, "#{resource_uri}/#{id}", properties)
+            end
           end
 
         when 'delete'
@@ -283,8 +274,8 @@ module LMRest
           when 'get'
 
             define_method("get_#{parent_singular}_#{child_plural}") do |id, params = {}, &block|
-            uri = lambda { |params| "#{parent_resource_uri}/#{id}/#{child['method_names']['plural']}#{RequestParams.parameterize(params)}" }
-            Resource.parse paginate(uri, params)
+              uri = lambda { |params| "#{parent_resource_uri}/#{id}/#{child['method_names']['plural']}#{RequestParams.parameterize(params)}" }
+              Resource.parse paginate(uri, params)
             end
 
           when 'add'
@@ -325,7 +316,6 @@ module LMRest
 
     private
 
-    attr_accessor :credentials
-    attr_accessor :api_token
+    attr_accessor :access_key
   end
 end
