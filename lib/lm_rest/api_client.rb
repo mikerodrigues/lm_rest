@@ -1,7 +1,7 @@
 require 'date'
 require 'base64'
 require 'openssl'
-require 'unirest'
+require 'rest-client'
 require 'json'
 require 'lm_rest/resource'
 require 'lm_rest/request_params'
@@ -80,13 +80,13 @@ module LMRest
 
       case method
       when :get
-        response = Unirest.get(url, headers: headers)
+        response = RestClient.get(url, headers)
       when :post
-        response = Unirest.post(url, auth: credentials, headers: headers, parameters: json_params)
+        response = RestClient.post(url, json_params, headers)
       when :put
-        response = Unirest.put(url, auth: credentials, headers: headers, parameters: json_params)
+        response = RestClient.put(url, json_params, headers)
       when :delete
-        response = Unirest.delete(url, auth: credentials, headers: headers)
+        response = RestClient.delete(url, headers: headers)
       end
 
       if response.code != 200
@@ -94,12 +94,8 @@ module LMRest
         raise
       end
 
-      if response.body.is_a? String
-        puts response.body
-        # raise
-      end
 
-      response.body
+      JSON.parse(response.body)
     end
 
     # Handles making multiple requests to the API if pagination is necessary.

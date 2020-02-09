@@ -1,6 +1,5 @@
 source 'https://rubygems.org'
 
-gem 'unirest'
 
 group :development do
   gem 'pry'
