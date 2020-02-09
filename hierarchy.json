@@ -1,0 +1,37 @@
+{
+	"aws": {},
+	"alert": {
+		"alerts": {
+			"_id": {
+				"ack": {}
+			}
+		}
+	},
+	"dashboard": {
+		"groups": {
+			"_id": {}
+		},
+		"dashboards": {
+			"_id": {
+				"widgets": {
+					"_id": {
+						"data": {}
+					}
+				}
+			}
+		}
+	},
+	"device": {
+		"groups": {},
+		"devices": {},
+		"devicedatasourceinstances": {},
+		"unmonitoreddevices": {}
+	},
+	"report": {},
+	"sdt": {},
+	"setting": {},
+	"website": {}
+}
+
+
+
