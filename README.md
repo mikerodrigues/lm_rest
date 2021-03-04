@@ -45,21 +45,9 @@ use the gem.
 ```ruby
 require 'lm_rest'
 
-
-# Authenticate with an API token (preferred):
-credential = {company: 'company',
-              access_key:'api_access_key',
-              access_id:'api_access_id'}
-
-
-# Authenticate with Basic Auth (not preferred):
-credential = {company: 'company',
-              user: 'user',
-              password: 'password'}
-
-# Create an instance of the API Client
-lm = LMRest::APIClient.new(credential)
-
+# Create an instance of the API Client, passing in an API token for
+authentication. Pretend this portal is at `company.logicmonitor.com`:
+lm = LMRest::APIClient.new('company', 'access_id', 'access_key')
 
 # returns array of Resource objects
 lm.get_datasources
@@ -100,7 +88,6 @@ lm.delete_device(device)
 lm.add_device(device)
 
 
-
 # Get your Santaba version info
 lm.get_version
 
@@ -119,12 +106,6 @@ lm.run_report(id)
 
 ```
 
-
-## Development
-
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake test` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
-
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
 
 
 ## Contributing
