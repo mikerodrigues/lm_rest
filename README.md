@@ -45,8 +45,7 @@ use the gem.
 ```ruby
 require 'lm_rest'
 
-# Create an instance of the API Client, passing in an API token for
-authentication. Pretend this portal is at `company.logicmonitor.com`:
+# Create an instance of the API Client, passing in an API token for authentication. Pretend this portal is at `company.logicmonitor.com`:
 lm = LMRest::APIClient.new('company', 'access_id', 'access_key')
 
 # returns array of Resource objects
