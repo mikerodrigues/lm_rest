@@ -20,8 +20,8 @@ Or install it yourself as:
 
 ## Supported API Resources
 
-Every API resource defined in the `api.json` file and its associated defined
-methods are supported, and you can easily add your own if you can't wait for me
+Every API resource is defined in the `api.json` file and its associated defined
+methods are supported. You can easily add your own if you can't wait for me
 to update this.
 
 Each method (`get_*, add_*, update_*, delete_*`) works the same
@@ -107,6 +107,9 @@ lm.run_report(id)
 
 ```
 
+## TODO
+
+* Handle nested stuff, and resource-specific operations
 
 
 ## Contributing
