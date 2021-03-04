@@ -1,6 +1,6 @@
 # LMRest
 
-A Ruby gem for the LogicMonitor REST API.
+An Unofficial Ruby gem for the LogicMonitor REST API.
 
 ## Installation
 
