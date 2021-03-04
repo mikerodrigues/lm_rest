@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.authors       = ['Michael Rodrigues']
   spec.email         = ['mikebrodrigues@gmail.com']
 
-  spec.summary       = 'API Wrapper for LogicMonitor Rest API.'
+  spec.summary       = 'API Wrapper for LogicMonitor Rest API v2.'
   spec.description   = 'Interact programmatically with your LogicMonitor account via the REST API.'
   spec.homepage      = 'https://github.com/mikerodrigues/lm_rest'
 
