@@ -38,14 +38,6 @@ module LMRest
       uri.split("?")[0].split("/").join("/")
     end
 
-    def snakerize(string)
-      string.gsub(/::/, '/').
-        gsub(/([A-Z]+)([A-Z][a-z])/,'\1_\2').
-        gsub(/([a-z\d])([A-Z])/,'\1_\2').
-        tr("-", "_").
-        downcase
-    end
-
     def sign(method, uri, data = nil)
 
       resource_uri = uri_to_resource_uri(uri)
@@ -180,76 +172,75 @@ module LMRest
       end
     end
 
-    def self.process_paths
+    def self.define_action_methods(resource_type, attributes)
+      singular = attributes['method_names']['singular']
+      plural = attributes['method_names']['plural']
       resource_uri = attributes['url']
-      @@api_json[paths].keys.each do |path|
 
-        path.keys.each do |action|
-          case action
-          when 'get'
+      attributes['actions'].each do |action|
+        case action
+        when 'get'
 
-            uri = lambda { |params| "#{resource_uri}#{RequestParams.parameterize(params)}"}
-            method_name = snakerize(@@api_json['paths'][path][action][operationId])
+          uri = lambda { |params| "#{resource_uri}#{RequestParams.parameterize(params)}"}
 
-            unless plural.nil?
-              # Define a method to fetch multiple resources with optional params
-              define_method("get_#{plural}") do |params = {}|
-                Resource.parse paginate(uri, params)
-              end
+          unless plural.nil?
+            # Define a method to fetch multiple resources with optional params
+            define_method("get_#{plural}") do |params = {}|
+              Resource.parse paginate(uri, params)
             end
+          end
 
-            # Define a method to get one resource by it's id number, with optional
-            # params, thought now that I think about it I'm not sure why you'd pass
-            # params when grabbing just one resource.
+          # Define a method to get one resource by it's id number, with optional
+          # params, thought now that I think about it I'm not sure why you'd pass
+          # params when grabbing just one resource.
 
-            # Some resources are Singletons
-            unless singular.nil?
-              define_method("get_#{singular}") do |*args|
-                case args.size
-                when 0
-                  Resource.parse request(:get, "#{resource_uri}", nil)
-                when 1
-                  Resource.parse request(:get, "#{resource_uri}/#{args[0]}", nil)
-                when 2
-                  Resource.parse request(:get, "#{resource_uri}/#{args[0]}#{RequestParams.parameterize(args[1])}", nil)
-                else
-                  raise ArgumentError.new("wrong number for arguments (#{args.count} for 1..2)")
-                end
-              end
-            end
-
-          when 'add'
-
-            # Define a method to add a new resource to the account
-            define_method("add_#{singular}") do |properties|
-              if properties.class == LMRest::Resource
-                Resource.parse request(:post, "#{resource_uri}", properties.to_h)
+          # Some resources are Singletons
+          unless singular.nil?
+            define_method("get_#{singular}") do |*args|
+              case args.size
+              when 0
+                Resource.parse request(:get, "#{resource_uri}", nil)
+              when 1
+                Resource.parse request(:get, "#{resource_uri}/#{args[0]}", nil)
+              when 2
+                Resource.parse request(:get, "#{resource_uri}/#{args[0]}#{RequestParams.parameterize(args[1])}", nil)
               else
-                Resource.parse request(:post, "#{resource_uri}", properties)
+                raise ArgumentError.new("wrong number for arguments (#{args.count} for 1..2)")
               end
             end
+          end
 
-          when 'update'
+        when 'add'
 
-            # Define a method to update a resource
-            define_method("update_#{singular}") do |id, properties = {}|
-              if id.class == LMRest::Resource
-                Resource.parse request(:put, "#{resource_uri}/#{id.id}", id.to_h)
-              else
-                Resource.parse request(:put, "#{resource_uri}/#{id}", properties)
-              end
+          # Define a method to add a new resource to the account
+          define_method("add_#{singular}") do |properties|
+            if properties.class == LMRest::Resource
+              Resource.parse request(:post, "#{resource_uri}", properties.to_h)
+            else
+              Resource.parse request(:post, "#{resource_uri}", properties)
             end
+          end
 
-          when 'delete'
+        when 'update'
 
-            # Define a method to delete the resource
-            define_method("delete_#{singular}") do |id|
-              if id.class == LMRest::Resource
-                id = id.id
-                Resource.parse request(:delete, "#{resource_uri}/#{id}", nil)
-              else
-                Resource.parse request(:delete, "#{resource_uri}/#{id}", nil)
-              end
+          # Define a method to update a resource
+          define_method("update_#{singular}") do |id, properties = {}|
+            if id.class == LMRest::Resource
+              Resource.parse request(:put, "#{resource_uri}/#{id.id}", id.to_h)
+            else
+              Resource.parse request(:put, "#{resource_uri}/#{id}", properties)
+            end
+          end
+
+        when 'delete'
+
+          # Define a method to delete the resource
+          define_method("delete_#{singular}") do |id|
+            if id.class == LMRest::Resource
+              id = id.id
+              Resource.parse request(:delete, "#{resource_uri}/#{id}", nil)
+            else
+              Resource.parse request(:delete, "#{resource_uri}/#{id}", nil)
             end
           end
         end

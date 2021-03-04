@@ -23,7 +23,7 @@
 		]
 	},
 	"Collector": {
-		"url": "/setting/collectors",
+		"url": "/setting/collector/collectors",
 		"method_names": {
 			"singular": "collector",
 			"plural": "collectors"
@@ -126,11 +126,11 @@
 			"delete"
 		]
 	},
-	"Service": {
-		"url": "/service/services",
+	"Website": {
+		"url": "/website/websites",
 		"method_names": {
-			"singular": "service",
-			"plural": "services"
+			"singular": "website",
+			"plural": "websites"
 		},
 		"actions": [
 			"get",
@@ -143,7 +143,7 @@
 		]
 	},
 	"SiteMonitorCheckpoint": {
-		"url": "/service/smcheckpoints",
+		"url": "/website/smcheckpoints",
 		"method_names": {
 			"singular": "smcheckpoint",
 			"plural": "smcheckpoints"
@@ -153,7 +153,7 @@
 		]
 	},
 	"ServiceGroup": {
-		"url": "/service/groups",
+		"url": "/website/groups",
 		"method_names": {
 			"singular": "service_group",
 			"plural": "service_groups"
@@ -195,7 +195,7 @@
 		]
 	},
 	"APIToken": {
-		"url": "/setting/apiTokens",
+		"url": "/setting/admin/apitokens",
 		"method_names": {
 			"singular": "api_token",
 			"plural": "api_tokens"
