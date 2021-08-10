@@ -18,6 +18,29 @@ Or install it yourself as:
 
 `$ gem install lm_rest`
 
+## Remove system.categories
+
+If you accidentally applied system.categories all over your LogicMonitor
+environment, or just need to clean out some old categories, there's an included
+demo script just for you.
+
+Install this gem, then check in the `/bin` folder of this repo for the
+`system_category_cleaner.rb` script. It's very simple, you'll just need to pass
+it the following arguments in order, preferrably in single quotes:
+* Your portal name, like `'hooli'`
+* Your API access ID like `'long_api_access_id'`
+* Your API access Key like `'long_api_access_key'`
+* The AppliesTo matching devices you want to scrub like
+  `'hascategory("collector")&& system.collectorversion>=24106'`
+* The category you want to remove, like `'BadCategory'`
+
+Your devices should be all cleaned up. The script will respect rate limits and
+it splits all system.categories on ',' before removing the entry you specify.
+
+It should go without saying that this is unofficial, unsupported, and may mess
+your system up even more.
+
+
 ## Supported API Resources
 
 Every API resource is defined in the `api.json` file and its associated defined
