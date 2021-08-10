@@ -2,6 +2,8 @@
 
 An Unofficial Ruby gem for the LogicMonitor REST API.
 
+[![Gem Version](https://badge.fury.io/rb/lm_rest.svg)](https://badge.fury.io/rb/lm_rest)
+
 ## Installation
 
 Add this line to your application's Gemfile:
