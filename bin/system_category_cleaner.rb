@@ -28,9 +28,9 @@ else
 end
 
 request = {
-  currentAppliesTo: "true()",
+  currentAppliesTo: @at,
   needInheritProps: true,
-  originalAppliesTo: "true()",
+  originalAppliesTo: @at,
   type: "testAppliesTo"
 }
 
