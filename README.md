@@ -4,6 +4,8 @@ An Unofficial Ruby gem for the LogicMonitor REST API.
 
 [![Gem Version](https://badge.fury.io/rb/lm_rest.svg)](https://badge.fury.io/rb/lm_rest)
 
+[LM Swagger API Docs](https://www.logicmonitor.com/swagger-ui-master/dist/)
+
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -84,7 +86,9 @@ lm.get_datasource(721)
 
 
 # return array of Resource objects whose names begin with "VMware"
-lm.get_datasources(filter: 'name:VMware*')
+# NOTE: when using filter, you need quotes around the filter's "value":
+# This is incorrect in the LogicMonitor API docs as of this writing (8/10/2021)
+lm.get_datasources(filter: 'name:"VMware*"')
 
 
 # add a device to your account
