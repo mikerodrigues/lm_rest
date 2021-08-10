@@ -34,6 +34,28 @@
 			"delete"
 		]
 	},
+	"CollectorGroups": {
+		"url": "/setting/collector/groups",
+		"method_names": {
+			"singular": "collector_group",
+			"plural": "collector_groups"
+		},
+		"actions": [
+			"get",
+			"add",
+			"update",
+			"delete"
+		]
+	},
+	"CollectorVersions": {
+		"url": "/setting/collector/collectors/versions",
+		"method_names": {
+			"singular": "collector_versions"
+		},
+		"actions": [
+			"get"
+		]
+	},
 	"Datasource": {
 		"url": "/setting/datasources",
 		"method_names": {
@@ -87,7 +109,7 @@
 			"delete"
 		]
 	},
-	"Function": {
+	"AppliesToFunction": {
 		"url": "/setting/functions",
 		"method_names": {
 			"singular": "function",
@@ -265,6 +287,19 @@
 		],
 		"children": []
 	},
+	"DashboardGroups": {
+		"url": "/dashboard/groups",
+		"method_names": {
+			"singular": "dashboard_group",
+			"plural": "dashboard_groups"
+		},
+		"actions": [
+			"get",
+			"add",
+			"update",
+			"delete"
+		]
+	},
 	"Widget": {
 		"url": "/dashboard/widgets",
 		"method_names": {
@@ -276,6 +311,17 @@
 			"add",
 			"update",
 			"delete"
+		],
+		"children": []
+	},
+	"Debug": {
+		"url": "/debug",
+		"method_names": {
+			"singular": "debug"
+		},
+		"actions": [
+			"get",
+			"add"
 		],
 		"children": []
 	},
@@ -369,6 +415,15 @@
 		"url": "/setting/timezone",
 		"method_names": {
 			"singular": "timezone"
+		},
+		"actions": [
+			"get"
+		]
+	},
+	"APIPerfStats": {
+		"url": "/apiStats/externalApis",
+		"method_names": {
+			"singular": "api_perf_stats"
 		},
 		"actions": [
 			"get"
