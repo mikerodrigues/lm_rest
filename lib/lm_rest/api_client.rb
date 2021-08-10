@@ -17,6 +17,7 @@ module LMRest
     BASE_URL_SUFFIX = '.logicmonitor.com/santaba/rest'
 
     attr_reader :company, :api_url, :access_id
+    attr_reader :limit, :remaining, :window
 
     def initialize(company = nil, access_id =  nil, access_key = nil)
       APIClient.setup
@@ -78,15 +79,20 @@ module LMRest
 
       json_params = params.to_json
 
-      case method
-      when :get
-        response = RestClient.get(url, headers)
-      when :post
-        response = RestClient.post(url, json_params, headers)
-      when :put
-        response = RestClient.put(url, json_params, headers)
-      when :delete
-        response = RestClient.delete(url, headers: headers)
+      begin
+        case method
+        when :get
+          response = RestClient.get(url, headers)
+        when :post
+          response = RestClient.post(url, json_params, headers)
+        when :put
+          response = RestClient.put(url, json_params, headers)
+        when :delete
+          response = RestClient.delete(url, headers: headers)
+        end
+      rescue => e
+        puts e.http_body
+        raise
       end
 
       if response.code != 200
@@ -94,6 +100,9 @@ module LMRest
         raise
       end
 
+      @limit = response.headers['x_rate_limit_limit']
+      @remaining = response.headers['x_rate_limit_remaining']
+      @window = response.headers['x_rate_limit_window']
 
       JSON.parse(response.body)
     end
