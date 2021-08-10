@@ -9,9 +9,9 @@ def usage
   puts "USAGE:\t" + $PROGRAM_NAME + ' account id key applies_to category'
   puts ""
   puts "\taccount    - just the beginning of your portal name, like 'hooli'"
-  puts "\tid         - API key access id"
-  puts "\tkey        - API key access key"
-  puts "\tapplies_to - AppliesTo (in quotes on one line) matching devices you want to scrub"
+  puts "\tid         - API key access id in quotes"
+  puts "\tkey        - API key access key in quotes"
+  puts "\tapplies_to - AppliesTo (in single quotes on one line) matching devices you want to scrub"
   puts "\tcategory   - The system category value you wish to remove."
 end
 
