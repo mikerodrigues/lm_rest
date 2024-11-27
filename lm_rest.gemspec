@@ -30,5 +30,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rake'
   spec.add_development_dependency 'minitest'
   spec.add_dependency 'rest-client'
-  spec.add_dependency 'json', '~> 2.5.1'
+  spec.add_dependency 'json', '> 2.5.1'
 end
