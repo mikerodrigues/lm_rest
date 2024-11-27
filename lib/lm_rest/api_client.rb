@@ -71,7 +71,7 @@ module LMRest
       headers['Authorization'] = sign(method, uri, params)
       headers['Content-Type'] = 'application/json'
       headers['Accept'] = 'application/json, text/javascript'
-      headers['X-version'] = '2'
+      headers['X-version'] = '3'
 
       url = api_url + uri
       #puts "URL: " + url
