@@ -115,69 +115,38 @@ module LMRest
     # request() method with the 'offset' and 'size' params
     #
     def paginate(uri, params)
+      user_size = params[:size]
+      params[:size] = ITEMS_SIZE_LIMIT
+      params[:offset] ||= 0
 
-      # Hooray for pagination logic!
-      if (params[:size] == 0 || params[:size].nil? || params[:size] > ITEMS_SIZE_LIMIT)
-        # save user-entered size in a param for use later
-        user_size = params[:size]
+      body = request(:get, uri.call(params), nil)
+      item_collector = body['items']
+      total = body['total']
+      user_size = determine_user_size(user_size, total)
 
-        # set our size param to the max
-        params[:size] = ITEMS_SIZE_LIMIT
+      pages_remaining = calculate_pages_remaining(user_size)
 
-        # Set our offset to grab the first page of results 
-        params[:offset] ||= 0
+      fetch_remaining_pages(uri, params, item_collector, pages_remaining, user_size)
 
-        # make the initial request
+      body['items'] = item_collector
+      body
+    end
+
+    def determine_user_size(user_size, total)
+      user_size ||= total
+      user_size > total ? total : user_size
+    end
+
+    def calculate_pages_remaining(user_size)
+      ((user_size - ITEMS_SIZE_LIMIT).to_f / ITEMS_SIZE_LIMIT).ceil
+    end
+
+    def fetch_remaining_pages(uri, params, item_collector, pages_remaining, user_size)
+      pages_remaining.times do |page|
+        params[:offset] += ITEMS_SIZE_LIMIT
+        params[:size] = page == pages_remaining - 1 ? user_size % ITEMS_SIZE_LIMIT : ITEMS_SIZE_LIMIT
         body = request(:get, uri.call(params), nil)
-
-        # pull the actual items out of the request body and into our
-        # item_collector while we build up the items list
-        item_collector = body['items']
-
-        # The API sends the total number of objects back in the first request.
-        # We need this to determine how many more pages to pull
-        total = body['total']
-
-        # If user didn't pass size param, set it to total
-        # This just means you'll get all items if not specifying a size
-        user_size ||= total
-
-        # If the user passed a size larger than what's available, set it to
-        # total to retrieve all items
-        if user_size > total
-          user_size = total
-        end
-
-        # calculate the remaining number of items (after first request)
-        # then use that to figure out how many more times we need to call
-        # request() to get all the items, then do it
-        pages_remaining = ((user_size - ITEMS_SIZE_LIMIT).to_f/ITEMS_SIZE_LIMIT).ceil
-
-        pages_remaining.times do |page|
-
-          # Increment the offset by the limit to get the next page
-          params[:offset] += ITEMS_SIZE_LIMIT
-
-          # if this is the last page, get the remainder
-          if page == pages_remaining - 1
-            params[:size]  = user_size%ITEMS_SIZE_LIMIT
-          else
-            # else, get a whole page
-            params[:size] = ITEMS_SIZE_LIMIT
-          end
-
-          # make a subsequent request with modified params
-          body = request(:get, uri.call(params), nil)
-
-          # add these items to our item_collector
-          item_collector += body['items']
-        end
-
-        body['items'] = item_collector
-        body
-      else
-        # No pagination required, just request the page
-        request(:get, uri.call(params), nil)
+        item_collector += body['items']
       end
     end
 
