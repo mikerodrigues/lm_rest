@@ -66,37 +66,35 @@ module LMRest
       "LMv1 #{access_id}:#{signature}:#{time}"
     end
 
-    def request(method, uri, params={})
-      headers = {}
-      headers['Authorization'] = sign(method, uri, params)
-      headers['Content-Type'] = 'application/json'
-      headers['Accept'] = 'application/json, text/javascript'
-      headers['X-version'] = '3'
+    def request(method, uri, params = {})
+      headers = {
+        'Authorization' => sign(method, uri, params),
+        'Content-Type' => 'application/json',
+        'Accept' => 'application/json, text/javascript',
+        'X-version' => '3'
+      }
 
       url = api_url + uri
-      #puts "URL: " + url
-      #puts headers
-
       json_params = params.to_json
 
       begin
-        case method
-        when :get
-          response = RestClient.get(url, headers)
-        when :post
-          response = RestClient.post(url, json_params, headers)
-        when :put
-          response = RestClient.put(url, json_params, headers)
-        when :delete
-          response = RestClient.delete(url, headers: headers)
-        end
+        response = case method
+                   when :get
+                     RestClient.get(url, headers)
+                   when :post
+                     RestClient.post(url, json_params, headers)
+                   when :put
+                     RestClient.put(url, json_params, headers)
+                   when :delete
+                     RestClient.delete(url, headers: headers)
+                   end
       rescue => e
         puts e.http_body
         raise
       end
 
       if response.code != 200
-        puts response.code.to_s + ":" + response.body.to_s
+        puts "#{response.code}: #{response.body}"
         raise
       end
 
