@@ -232,6 +232,55 @@ def separator
   puts '-' * 40
 end
 
+def request(method, uri, params = {})
+  headers = build_headers(method, uri, params)
+  url = api_url + uri
+  json_params = params.to_json
+
+  response = execute_request(method, url, json_params, headers)
+  handle_response(response)
+
+  JSON.parse(response.body)
+end
+
+def build_headers(method, uri, params)
+  {
+    'Authorization' => sign(method, uri, params),
+    'Content-Type' => 'application/json',
+    'Accept' => 'application/json, text/javascript',
+    'X-version' => '3'
+  }
+end
+
+def execute_request(method, url, json_params, headers)
+  begin
+    case method
+    when :get
+      RestClient.get(url, headers)
+    when :post
+      RestClient.post(url, json_params, headers)
+    when :put
+      RestClient.put(url, json_params, headers)
+    when :delete
+      RestClient.delete(url, headers: headers)
+    end
+  rescue => e
+    puts e.http_body
+    raise
+  end
+end
+
+def handle_response(response)
+  if response.code != 200
+    puts "#{response.code}: #{response.body}"
+    raise
+  end
+
+  @limit = response.headers['x_rate_limit_limit']
+  @remaining = response.headers['x_rate_limit_remaining']
+  @window = response.headers['x_rate_limit_window']
+end
+
 @datasources = @lm.get_datasources(filter: "name:#{ARGV[3]}")
 
 @datasources.each do |datasource|
