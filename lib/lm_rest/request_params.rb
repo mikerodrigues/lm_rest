@@ -1,12 +1,12 @@
 module LMRest
   module RequestParams
     def self.parameterize(params_hash)
-      unless params_hash.empty?
-        params_hash.keys.each.with_index.reduce('?') do |string, (key, index)|
-          index > 0 ? string << '&' : ''
-          string << "#{key}=#{params_hash.fetch(key)}"
-        end
-      end
+      return '' if params_hash.empty?
+
+      params_hash.map.with_index do |(key, value), index|
+        prefix = index > 0 ? '&' : '?'
+        "#{prefix}#{key}=#{value}"
+      end.join
     end
   end
 end
