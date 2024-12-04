@@ -67,32 +67,44 @@ module LMRest
     end
 
     def request(method, uri, params = {})
-      headers = {
+      headers = build_headers(method, uri, params)
+      url = api_url + uri
+      json_params = params.to_json
+
+      response = execute_request(method, url, json_params, headers)
+      handle_response(response)
+
+      JSON.parse(response.body)
+    end
+
+    def build_headers(method, uri, params)
+      {
         'Authorization' => sign(method, uri, params),
         'Content-Type' => 'application/json',
         'Accept' => 'application/json, text/javascript',
         'X-version' => '3'
       }
+    end
 
-      url = api_url + uri
-      json_params = params.to_json
-
+    def execute_request(method, url, json_params, headers)
       begin
-        response = case method
-                   when :get
-                     RestClient.get(url, headers)
-                   when :post
-                     RestClient.post(url, json_params, headers)
-                   when :put
-                     RestClient.put(url, json_params, headers)
-                   when :delete
-                     RestClient.delete(url, headers: headers)
-                   end
+        case method
+        when :get
+          RestClient.get(url, headers)
+        when :post
+          RestClient.post(url, json_params, headers)
+        when :put
+          RestClient.put(url, json_params, headers)
+        when :delete
+          RestClient.delete(url, headers: headers)
+        end
       rescue => e
         puts e.http_body
         raise
       end
+    end
 
+    def handle_response(response)
       if response.code != 200
         puts "#{response.code}: #{response.body}"
         raise
@@ -101,8 +113,6 @@ module LMRest
       @limit = response.headers['x_rate_limit_limit']
       @remaining = response.headers['x_rate_limit_remaining']
       @window = response.headers['x_rate_limit_window']
-
-      JSON.parse(response.body)
     end
 
     # Handles making multiple requests to the API if pagination is necessary.
