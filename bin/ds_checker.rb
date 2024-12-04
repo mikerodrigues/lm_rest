@@ -153,27 +153,7 @@ def test_graphs(graphs)
   errors = []
 
   puts 'Graphs:'
-
-  display_prios = {}
-  graphs.each do |graph|
-    puts ' - "' + graph.name + '" at display priority ' + graph.displayPrio.to_s
-    # does the y-axis label contain capital letters?
-    if graph.verticalLabel.match(/[A-Z]/)
-      errors.push('graph "' + graph.name +
-                  '" has uppercase letters in the y-axis definition (' +
-                  graph.verticalLabel + ')')
-    end
-
-    # has this graph priority already been used?
-    if display_prios.include? graph.displayPrio
-      errors.push('graph "' + graph.name + '" is assigned the same display priority (' +
-                  graph.displayPrio.to_s + ') as "' +
-                  display_prios[graph.displayPrio] + '"')
-    else
-      # no -- store this priority in a hash for further testing
-      display_prios[graph.displayPrio] = graph.name
-    end
-  end
+  errors.concat(check_graphs(graphs, 'graph'))
 
   separator
   errors
@@ -183,26 +163,50 @@ def test_overview_graphs(overview_graphs)
   errors = []
 
   puts 'Overview Graphs:'
+  errors.concat(check_graphs(overview_graphs, 'overview graph'))
 
-  display_prios = {}
-  overview_graphs.each do |ograph|
-    puts ' - "' + ograph.name + '" at display priority ' + ograph.displayPrio.to_s
-    if ograph.verticalLabel.match(/[A-Z]/)
-      errors.push('overview graph "' + ograph.name +
-                  '" has uppercase letters in the y-axis definition (' +
-                  ograph.verticalLabel + ')')
+  separator
+  errors
+end
+
+def check_datapoints(datapoints, used_datapoints)
+  datapoint_ok = []
+  errors = []
+
+  datapoints.each do |datapoint|
+    used_datapoints.each do |used|
+      if used.include? datapoint.name
+        datapoint_ok.push(datapoint.name)
+        break
+      end
     end
 
-    if display_prios.include? ograph.displayPrio
-      errors.push('overview graph "' + ograph.name + '" is assigned the same display priority (' +
-                  ograph.displayPrio.to_s + ') as "' +
-                  display_prios[ograph.displayPrio] + '"')
-    else
-      display_prios[ograph.displayPrio] = ograph.name
+    unless datapoint_ok.include? datapoint.name
+      errors.push("datapoint \"#{datapoint.name}\" appears to be unused")
     end
   end
 
   separator
+  errors
+end
+
+def check_graphs(graphs, graph_type)
+  errors = []
+  display_prios = {}
+
+  graphs.each do |graph|
+    puts " - \"#{graph.name}\" at display priority #{graph.displayPrio}"
+    if graph.verticalLabel.match(/[A-Z]/)
+      errors.push("#{graph_type} \"#{graph.name}\" has uppercase letters in the y-axis definition (#{graph.verticalLabel})")
+    end
+
+    if display_prios.include? graph.displayPrio
+      errors.push("#{graph_type} \"#{graph.name}\" is assigned the same display priority (#{graph.displayPrio}) as \"#{display_prios[graph.displayPrio]}\"")
+    else
+      display_prios[graph.displayPrio] = graph.name
+    end
+  end
+
   errors
 end
 
@@ -236,7 +240,7 @@ def propose_fixes(errors)
 end
 
 def separator
-  puts '============================='
+  puts '-' * 40
 end
 
 @datasources = @lm.get_datasources(filter: "name:#{ARGV[3]}")
