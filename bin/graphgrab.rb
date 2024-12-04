@@ -2,7 +2,7 @@
 #
 #
 #
-require 'lm_rest'
+=begin require 'lm_rest'
 
 def usage
   puts "USAGE:\t" + $PROGRAM_NAME + ' account userid passwd'
@@ -38,4 +38,4 @@ end
   propose_fixes(errors)
 
   separator
-end
+end =end

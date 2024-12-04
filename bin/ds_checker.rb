@@ -103,50 +103,39 @@ def test_datapoint_usage(datapoints, complex_datapoints, graphs, overview_graphs
   datapoint_ok = []
 
   puts 'Datapoints:'
-  # is an alert trigger set?
   datapoints.each do |datapoint|
     if datapoint.alertExpr.size > 0
-      puts ' - ' + dp_type(datapoint) + ' datapoint "' + datapoint.name + '" has alert threshold set'
+      puts " - #{dp_type(datapoint)} datapoint \"#{datapoint.name}\" has alert threshold set"
     else
-
-      # is this datapoint used in a complex datapoint?
-      complex_datapoints.each do |complex_datapoint|
-        next unless complex_datapoint.postProcessorParam.include? datapoint.name
-        puts(' - ' + dp_type(datapoint) + ' datapoint "' + datapoint.name +
-                       '" used in complex datapoint' + complex_datapoint.name)
-        datapoint_ok.push(datapoint.name)
-        break
-      end
-
-      # is this datapoint used in any graphs?
-      graphs.each do |graph|
-        graph.dataPoints.each do |graph_datapoint|
-          next unless datapoint.name == graph_datapoint['name']
-          puts(' - ' + dp_type(datapoint) + ' datapoint "' + datapoint.name +
-                           '" used in graph "' + graph.name + '" datapoint')
-          datapoint_ok.push(datapoint.name)
-          break
-        end
-      end
-
-      overview_graphs.each do |ograph|
-        ograph.dataPoints.each do |ograph_datapoint|
-          next unless datapoint.name == ograph_datapoint['name']
-          puts(' - ' + dp_type(datapoint) + ' datapoint "' + datapoint.name +
-                           '" used in overview graph "' + ograph.name + '" datapoint')
-          datapoint_ok.push(datapoint.name)
-          break
-        end
-      end
-
-      unless datapoint_ok.include? datapoint.name
-        errors.push("datapoint \"" + datapoint.name + "\" appears to be unused")
-      end
+      check_complex_datapoints(datapoint, complex_datapoints, datapoint_ok)
+      check_graphs(datapoint, graphs, datapoint_ok, 'graph')
+      check_graphs(datapoint, overview_graphs, datapoint_ok, 'overview graph')
     end
   end
 
-  separator
   errors
+end
+
+def check_complex_datapoints(datapoint, complex_datapoints, datapoint_ok)
+  complex_datapoints.each do |complex_datapoint|
+    if complex_datapoint.postProcessorParam.include? datapoint.name
+      puts " - #{dp_type(datapoint)} datapoint \"#{datapoint.name}\" used in complex datapoint #{complex_datapoint.name}"
+      datapoint_ok.push(datapoint.name)
+      break
+    end
+  end
+end
+
+def check_graphs(datapoint, graphs, datapoint_ok, graph_type)
+  graphs.each do |graph|
+    graph.dataPoints.each do |graph_datapoint|
+      if datapoint.name == graph_datapoint['name']
+        puts " - #{dp_type(datapoint)} datapoint \"#{datapoint.name}\" used in #{graph_type} \"#{graph.name}\" datapoint"
+        datapoint_ok.push(datapoint.name)
+        break
+      end
+    end
+  end
 end
 
 def test_graphs(graphs)
