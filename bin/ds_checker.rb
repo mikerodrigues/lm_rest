@@ -75,27 +75,27 @@ def test_datapoint_alerts(datapoints)
   ]
 
   datapoints.each do |datapoint|
-    # is there a datapoint alert trigger set, but no custom alert message
-    #
-    if (datapoint.alertExpr.size > 0) && (datapoint.alertBody == 0)
-      errors.push("datapoint \"" + datapoint.name +
-                  "\" has an alert threshold but no message")
-    end
-
-    # is there a custom alert message on this datapoint?
-    #
-    next unless datapoint.alertBody.size > 0
-    tokens.each do |token|
-      # is this token in the datasource definition?
-      #
-      unless datapoint.alertBody.include? token
-        errors.push("custom alert message on \"" + datapoint.name +
-                    "\" datpoint doesn't include token " + token)
-      end
-    end
+    check_alert_threshold(datapoint, errors)
+    check_custom_alert_message(datapoint, tokens, errors)
   end
 
   errors
+end
+
+def check_alert_threshold(datapoint, errors)
+  if datapoint.alertExpr.size > 0 && datapoint.alertBody == 0
+    errors.push("datapoint \"#{datapoint.name}\" has an alert threshold but no message")
+  end
+end
+
+def check_custom_alert_message(datapoint, tokens, errors)
+  return unless datapoint.alertBody.size > 0
+
+  tokens.each do |token|
+    unless datapoint.alertBody.include? token
+      errors.push("custom alert message on \"#{datapoint.name}\" datapoint doesn't include token #{token}")
+    end
+  end
 end
 
 def test_datapoint_usage(datapoints, complex_datapoints, graphs, overview_graphs)
