@@ -420,6 +420,19 @@
 			"get"
 		]
 	},
+	"Netscans": {
+		"url": "/setting/netscans",
+		"method_names": {
+			"singular": "netscan",
+			"plural": "netscans"
+		},
+		"actions": [
+			"get",
+			"add",
+			"update",
+			"delete"
+		]
+	},
 	"APIPerfStats": {
 		"url": "/apiStats/externalApis",
 		"method_names": {

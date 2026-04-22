@@ -74,7 +74,11 @@ module LMRest
       response = execute_request(method, url, json_params, headers)
       handle_response(response)
 
-      JSON.parse(response.body)
+      if response.headers[:content_type] == "application/json"
+        JSON.parse(response.body)
+      else
+        response.body
+      end
     end
 
     def build_headers(method, uri, params)
@@ -235,18 +239,29 @@ module LMRest
         child_resource_uri = attributes['url'].split("/").last
 
         child['actions'].each do |action|
-          case action
-          when 'get'
-
+            case action
+            when 'get'
             define_method("get_#{parent_singular}_#{child_plural}") do |id, params = {}, &block|
               uri = lambda { |params| "#{parent_resource_uri}/#{id}/#{child['method_names']['plural']}#{RequestParams.parameterize(params)}" }
               Resource.parse paginate(uri, params)
             end
 
-          when 'add'
-          when 'update'
-          when 'delete'
-          end
+            when 'add'
+            define_method("add_#{parent_singular}_#{child_singular}") do |parent_id, properties|
+              properties_hash = properties.is_a?(LMRest::Resource) ? properties.to_h : properties
+              Resource.parse request(:post, "#{parent_resource_uri}/#{parent_id}/#{child_resource_uri}", properties_hash)
+            end
+
+            when 'update'
+            define_method("update_#{parent_singular}_#{child_singular}") do |parent_id, child_id, properties = {}|
+              Resource.parse request(:put, "#{parent_resource_uri}/#{parent_id}/#{child_resource_uri}/#{child_id}", properties)
+            end
+
+            when 'delete'
+            define_method("delete_#{parent_singular}_#{child_singular}") do |parent_id, child_id|
+              Resource.parse request(:delete, "#{parent_resource_uri}/#{parent_id}/#{child_resource_uri}/#{child_id}", nil)
+            end
+            end
         end
       end
     end
@@ -279,8 +294,74 @@ module LMRest
       end
     end
 
+    # Helper to return execution counts for all websites across a time window.
+    # Assumes website interval is in minutes and locations/checkpoints is an array
+    # or comma-separated list.
+    def website_execution_stats(days = 30)
+      raise ArgumentError, "days must be positive" if days <= 0
+
+      websites = get_websites
+
+      per_site = websites.map do |site|
+        interval = website_interval_minutes(site)
+        location_count = website_location_count(site)
+        next if interval.nil? || interval <= 0
+
+        executions = (days * 24 * 60.0 / interval * location_count).ceil
+
+        {
+          id: site.respond_to?(:id) ? site.id : nil,
+          name: site.respond_to?(:name) ? site.name : nil,
+          interval_minutes: interval,
+          location_count: location_count,
+          executions: executions
+        }
+      end.compact
+
+      {
+        days: days,
+        website_count: per_site.count,
+        total_executions: per_site.sum { |row| row[:executions] },
+        websites: per_site
+      }
+    end
+
     private
 
     attr_accessor :access_key
+
+    def website_interval_minutes(site)
+      interval_attrs = %i[checkInterval interval pollingInterval testInterval]
+      interval_attrs.each do |attr|
+        next unless site.respond_to?(attr)
+        value = site.send(attr)
+        return value.to_f if value
+      end
+      nil
+    end
+
+    def website_location_count(site)
+      location_attrs = %i[checkpoints checkpointIds checkpointId locations locationIds]
+      location_attrs.each do |attr|
+        next unless site.respond_to?(attr)
+        value = site.send(attr)
+        count = count_locations(value)
+        return count unless count.nil?
+      end
+      0
+    end
+
+    def count_locations(value)
+      case value
+      when Array
+        value.compact.length
+      when String
+        value.split(",").map(&:strip).reject(&:empty?).length
+      when Numeric
+        1
+      else
+        nil
+      end
+    end
   end
 end

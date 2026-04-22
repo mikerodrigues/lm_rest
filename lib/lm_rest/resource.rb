@@ -23,6 +23,8 @@ module LMRest
         begin
           if body.key? 'items'
             parse_collection(body['items'])
+          elsif body.match? /\<\?xml version/
+            body
           else
             parse_object(body)
           end
