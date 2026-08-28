@@ -4,7 +4,7 @@ An Unofficial Ruby gem for the LogicMonitor REST API.
 
 [![Gem Version](https://badge.fury.io/rb/lm_rest.svg)](https://badge.fury.io/rb/lm_rest)
 
-[LM Swagger API Docs](https://www.logicmonitor.com/swagger-ui-master/dist/)
+[LogicMonitor REST API v3 Swagger Docs](https://www.logicmonitor.com/support/rest-api-v3-swagger-documentation)
 
 ## Installation
 
@@ -47,27 +47,32 @@ your system up even more.
 
 ## Supported API Resources
 
-Every API resource is defined in the `api.json` file and its associated defined
-methods are supported. You can easily add your own if you can't wait for me
-to update this.
+Every API resource and operation is defined in `api.json`, which is generated
+from the LogicMonitor REST API v3 Swagger surface. Generated operation methods
+and legacy convenience aliases are both supported.
 
-Each method (`get_*, add_*, update_*, delete_*`) works the same
-for each resource. Each method name follows the pattern `method_resource`.
+Each method (`get_*, add_*, update_*, delete_*`) works the same for each
+resource. Each method name follows the pattern `method_resource`.
 
-Every method except for `delete_*` will return an `LMRest::Resource` object.
-It is essentially just a PORO with dynamically created property accessors
-(constructed from the API JSON response). This makes it easy to access
-attributes, edit them, and update objects. You can get a `Hash` version of the
-object with `#to_h`.
+Every method except for `delete_*` returns `LMRest::Resource` objects. A
+resource is a hash-backed wrapper around the API JSON response with dynamic
+attribute-style access, so both `resource.name` and `resource['name']` work.
+Use `#to_h` to get a deep-copied `Hash` version suitable for updates.
 
-Note: This library handles pagination for you! Use `size` and `offset` request
-parameters and get sane results. Default `size` is the total number of existing
-objects. The default `offset` is 0.
+Paginated GET endpoints are handled automatically. If you omit `size`, the
+client will keep requesting pages until all items have been collected. If you
+set `size`, the client will fetch up to that many items even when it spans
+multiple 1000-item API pages. `offset` defaults to `0`.
 
 ## Usage
 
 See the example `ds_checker.rb` script in `bin` to get a better feel for how to
-use the gem.
+use the gem. It expects:
+
+* LogicMonitor account name
+* API access ID
+* API access key
+* Datasource name or filter glob
 
 ```ruby
 require 'lm_rest'
@@ -77,7 +82,7 @@ require 'lm_rest'
 
 lm = LMRest::APIClient.new('company', 'access_id', 'access_key')
 
-# returns array of Resource objects
+# returns all datasource resources across every API page
 lm.get_datasources
 
 
@@ -132,6 +137,14 @@ lm.ack_collector_down(id, comment)
 
 # Run Reports!
 lm.run_report(id)
+
+
+# Handle API failures without leaking response bodies to stdout
+begin
+  lm.get_device(999999)
+rescue LMRest::APIError => e
+  warn "#{e.status}: #{e.body}"
+end
 
 
 ```

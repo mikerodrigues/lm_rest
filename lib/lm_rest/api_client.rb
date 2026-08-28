@@ -8,6 +8,18 @@ require 'lm_rest/resource'
 require 'lm_rest/request_params'
 
 module LMRest
+  class APIError < StandardError
+    attr_reader :status, :body, :headers
+
+    def initialize(response)
+      @status = response.code
+      @body = response.body
+      @headers = response.headers
+
+      super("LogicMonitor API request failed with status #{@status}")
+    end
+  end
+
   class APIClient
     include RequestParams
 
@@ -85,36 +97,28 @@ module LMRest
     end
 
     def execute_request(method, url, payload, headers)
-      begin
-        case method
-        when :get
-          RestClient.get(url, headers)
-        when :post
-          RestClient.post(url, payload, headers)
-        when :put
-          RestClient.put(url, payload, headers)
-        when :patch
-          RestClient.patch(url, payload, headers)
-        when :delete
-          if payload.nil?
-            RestClient.delete(url, headers)
-          else
-            RestClient::Request.execute(method: :delete, url: url, payload: payload, headers: headers)
-          end
+      case method
+      when :get
+        RestClient.get(url, headers)
+      when :post
+        RestClient.post(url, payload, headers)
+      when :put
+        RestClient.put(url, payload, headers)
+      when :patch
+        RestClient.patch(url, payload, headers)
+      when :delete
+        if payload.nil?
+          RestClient.delete(url, headers)
         else
-          raise ArgumentError, "unsupported HTTP method: #{method}"
+          RestClient::Request.execute(method: :delete, url: url, payload: payload, headers: headers)
         end
-      rescue => e
-        puts e.http_body if e.respond_to?(:http_body)
-        raise
+      else
+        raise ArgumentError, "unsupported HTTP method: #{method}"
       end
     end
 
     def handle_response(response)
-      unless response.code.between?(200, 299)
-        puts "#{response.code}: #{response.body}"
-        raise
-      end
+      raise APIError.new(response) unless response.code.between?(200, 299)
 
       @limit = response.headers[:x_rate_limit_limit] || response.headers['x_rate_limit_limit']
       @remaining = response.headers[:x_rate_limit_remaining] || response.headers['x_rate_limit_remaining']
@@ -124,7 +128,9 @@ module LMRest
     def parse_response(response)
       return nil if response.body.nil? || response.body.empty?
 
-      if response.headers[:content_type].to_s.include?('application/json')
+      content_type = response.headers[:content_type] || response.headers['content_type']
+
+      if content_type.to_s.include?('application/json')
         JSON.parse(response.body)
       else
         response.body
@@ -333,11 +339,7 @@ module LMRest
 
     # Ack a down collector, pass the ID and a comment
     def ack_collector_down(id, comment)
-      if id.class == LMRest::Resource
-        Resource.parse request(:post, "/setting/collectors/#{id.id}/ackdown", {comment: comment})
-      else
-        Resource.parse request(:post, "/setting/collectors/#{id}/ackdown", {comment: comment})
-      end
+      ack_collector_down_alert_by_id(resource_id(id), comment: comment)
     end
 
     # run a report
@@ -392,7 +394,7 @@ module LMRest
       uri = lambda { |params| operation_uri(operation, path_values, params) }
 
       response =
-        if operation['paginated']
+        if operation_paginated?(operation)
           paginate(uri, query_params, method, body, content_type)
         else
           request(method, uri.call(query_params), body, content_type: content_type)
@@ -466,6 +468,10 @@ module LMRest
 
     def request_content_type(operation)
       Array(operation['consumes']).find { |type| type && !type.empty? } || 'application/json'
+    end
+
+    def operation_paginated?(operation)
+      operation['paginated'] || (operation['method'] == 'get' && operation['paginated_response'])
     end
 
     def normalize_params_hash(params)

@@ -1,20 +1,49 @@
 module LMRest
   class Resource
+    attr_reader :attributes
 
     def initialize(properties)
+      @attributes = {}
+
       properties.each do |key, value|
-        instance_variable_set(:"@#{key}", value)
-        define_singleton_method(key.intern) { instance_variable_get("@#{key}") }
-        define_singleton_method("#{key}=".intern) do |new_value|
-          instance_variable_set("@#{key}", new_value)
-        end
+        @attributes[key.to_s] = value
       end
     end
 
+    def [](key)
+      @attributes[key.to_s]
+    end
+
+    def []=(key, value)
+      @attributes[key.to_s] = value
+    end
+
+    def key?(key)
+      @attributes.key?(key.to_s)
+    end
+
     def to_h
-      instance_variables.map do |var|
-        [var[1..-1].to_s, instance_variable_get(var)]
-      end.to_h
+      deep_copy(@attributes)
+    end
+
+    def method_missing(name, *args)
+      attribute_name = name.to_s
+
+      if attribute_name.end_with?('=')
+        raise ArgumentError, "wrong number of arguments (#{args.count} for 1)" unless args.count == 1
+
+        @attributes[attribute_name.delete_suffix('=')] = args.first
+      elsif args.empty? && @attributes.key?(attribute_name)
+        @attributes[attribute_name]
+      else
+        super
+      end
+    end
+
+    def respond_to_missing?(name, include_private = false)
+      attribute_name = name.to_s
+
+      attribute_name.end_with?('=') || @attributes.key?(attribute_name) || super
     end
 
     class << self
@@ -46,6 +75,23 @@ module LMRest
 
       def parse_object(item)
         item.is_a?(Hash) ? new(item) : item
+      end
+    end
+
+    private
+
+    def deep_copy(value)
+      case value
+      when LMRest::Resource
+        value.to_h
+      when Hash
+        value.each_with_object({}) do |(key, item), copied|
+          copied[key] = deep_copy(item)
+        end
+      when Array
+        value.map { |item| deep_copy(item) }
+      else
+        value
       end
     end
   end

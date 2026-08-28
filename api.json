@@ -4255,7 +4255,7 @@
         "ref": "Pagination"
       },
       "paginated_response": true,
-      "paginated": false,
+      "paginated": true,
       "consumes": [
 
       ],
@@ -5161,7 +5161,7 @@
         "ref": "DeviceDeltaPaginationResponse"
       },
       "paginated_response": true,
-      "paginated": false,
+      "paginated": true,
       "consumes": [
 
       ],
@@ -5189,7 +5189,7 @@
         "ref": "DeviceDeltaPaginationResponse"
       },
       "paginated_response": true,
-      "paginated": false,
+      "paginated": true,
       "consumes": [
 
       ],
@@ -5760,7 +5760,7 @@
         "ref": "RestDeviceEventsourcePaginationResponse"
       },
       "paginated_response": true,
-      "paginated": false,
+      "paginated": true,
       "consumes": [
 
       ],
@@ -6276,7 +6276,7 @@
         "ref": "DiagnosticsourcePaginationResponse"
       },
       "paginated_response": true,
-      "paginated": false,
+      "paginated": true,
       "consumes": [
 
       ],
@@ -6513,7 +6513,7 @@
         "ref": "IntegrationAuditLogPaginationResponse"
       },
       "paginated_response": true,
-      "paginated": false,
+      "paginated": true,
       "consumes": [
 
       ],
@@ -6569,7 +6569,7 @@
         "ref": "BatchJobPaginationResponse"
       },
       "paginated_response": true,
-      "paginated": false,
+      "paginated": true,
       "consumes": [
 
       ],
@@ -6653,7 +6653,7 @@
         "ref": "LogQueryGroupPaginationResponse"
       },
       "paginated_response": true,
-      "paginated": false,
+      "paginated": true,
       "consumes": [
 
       ],
@@ -6681,7 +6681,7 @@
         "ref": "LogQueryGroupPaginationResponse"
       },
       "paginated_response": true,
-      "paginated": false,
+      "paginated": true,
       "consumes": [
 
       ],
@@ -6737,7 +6737,7 @@
         "ref": "LogSourcePaginationResponse"
       },
       "paginated_response": true,
-      "paginated": false,
+      "paginated": true,
       "consumes": [
 
       ],
@@ -7041,7 +7041,7 @@
         "ref": "OidSourcePaginationResponse"
       },
       "paginated_response": true,
-      "paginated": false,
+      "paginated": true,
       "consumes": [
 
       ],
@@ -7393,7 +7393,7 @@
         "ref": "RemediationSourcePaginationResponse"
       },
       "paginated_response": true,
-      "paginated": false,
+      "paginated": true,
       "consumes": [
 
       ],
@@ -7540,7 +7540,7 @@
         "ref": "Pagination"
       },
       "paginated_response": true,
-      "paginated": false,
+      "paginated": true,
       "consumes": [
 
       ],
@@ -7967,7 +7967,7 @@
         "ref": "TopologySourcePaginationResponse"
       },
       "paginated_response": true,
-      "paginated": false,
+      "paginated": true,
       "consumes": [
 
       ],
@@ -8026,7 +8026,7 @@
         "ref": "ConfigSourceUpdateReasonsPaginationResponse"
       },
       "paginated_response": true,
-      "paginated": false,
+      "paginated": true,
       "consumes": [
 
       ],
