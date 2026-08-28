@@ -129,18 +129,30 @@ module LMRest
     # request() method with the 'offset' and 'size' params
     #
     def paginate(uri, params)
-      user_size = params[:size]
-      params[:size] = ITEMS_SIZE_LIMIT
+      params = params.nil? ? {} : params.dup
+      user_size = params[:size]&.to_i
+      params[:size] = user_size && user_size < ITEMS_SIZE_LIMIT ? user_size : ITEMS_SIZE_LIMIT
       params[:offset] ||= 0
 
       body = request(:get, uri.call(params), nil)
+      return body unless body.is_a?(Hash) && body.key?('items')
+
       item_collector = body['items']
-      total = body['total']
+      total = body['total'] || item_collector.length
       user_size = determine_user_size(user_size, total)
+      item_collector = item_collector.first(user_size)
 
-      pages_remaining = calculate_pages_remaining(user_size)
+      while item_collector.length < user_size
+        params[:offset] += params[:size]
+        remaining = user_size - item_collector.length
+        params[:size] = [remaining, ITEMS_SIZE_LIMIT].min
 
-      fetch_remaining_pages(uri, params, item_collector, pages_remaining, user_size)
+        body = request(:get, uri.call(params), nil)
+        break unless body.is_a?(Hash) && body.key?('items')
+        break if body['items'].empty?
+
+        item_collector.concat(body['items'].first(remaining))
+      end
 
       body['items'] = item_collector
       body
@@ -149,19 +161,6 @@ module LMRest
     def determine_user_size(user_size, total)
       user_size ||= total
       user_size > total ? total : user_size
-    end
-
-    def calculate_pages_remaining(user_size)
-      ((user_size - ITEMS_SIZE_LIMIT).to_f / ITEMS_SIZE_LIMIT).ceil
-    end
-
-    def fetch_remaining_pages(uri, params, item_collector, pages_remaining, user_size)
-      pages_remaining.times do |page|
-        params[:offset] += ITEMS_SIZE_LIMIT
-        params[:size] = page == pages_remaining - 1 ? user_size % ITEMS_SIZE_LIMIT : ITEMS_SIZE_LIMIT
-        body = request(:get, uri.call(params), nil)
-        item_collector += body['items']
-      end
     end
 
     def self.define_action_methods(resource_type, attributes)
