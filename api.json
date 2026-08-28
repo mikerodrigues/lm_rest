@@ -9,6 +9,45 @@
 			"get"
 		]
 	},
+	"AccessGroup": {
+		"url": "/setting/accessgroup",
+		"method_names": {
+			"singular": "access_group",
+			"plural": "access_groups"
+		},
+		"actions": [
+			"get",
+			"add",
+			"update",
+			"delete"
+		]
+	},
+	"ActionChain": {
+		"url": "/setting/action/chains",
+		"method_names": {
+			"singular": "action_chain",
+			"plural": "action_chains"
+		},
+		"actions": [
+			"get",
+			"add",
+			"update",
+			"delete"
+		]
+	},
+	"ActionRule": {
+		"url": "/setting/action/rules",
+		"method_names": {
+			"singular": "action_rule",
+			"plural": "action_rules"
+		},
+		"actions": [
+			"get",
+			"add",
+			"update",
+			"delete"
+		]
+	},
 	"BatchJob": {
 		"url": "/setting/batchjobs",
 		"method_names": {
@@ -325,6 +364,58 @@
 		],
 		"children": []
 	},
+	"DiagnosticSource": {
+		"url": "/setting/diagnosticsources",
+		"method_names": {
+			"singular": "diagnostic_source",
+			"plural": "diagnostic_sources"
+		},
+		"actions": [
+			"get",
+			"add",
+			"update",
+			"delete"
+		]
+	},
+	"LogPartition": {
+		"url": "/log/partitions",
+		"method_names": {
+			"singular": "log_partition",
+			"plural": "log_partitions"
+		},
+		"actions": [
+			"get",
+			"add",
+			"update",
+			"delete"
+		]
+	},
+	"LogQueryGroup": {
+		"url": "/log/logquerygroups",
+		"method_names": {
+			"singular": "log_query_group",
+			"plural": "log_query_groups"
+		},
+		"actions": [
+			"get",
+			"add",
+			"update",
+			"delete"
+		]
+	},
+	"LogSource": {
+		"url": "/setting/logsources",
+		"method_names": {
+			"singular": "log_source",
+			"plural": "log_sources"
+		},
+		"actions": [
+			"get",
+			"add",
+			"update",
+			"delete"
+		]
+	},
 	"Report": {
 		"url": "/report/reports",
 		"method_names": {
@@ -338,6 +429,45 @@
 			"delete"
 		],
 		"children": []
+	},
+	"ReportGroup": {
+		"url": "/report/groups",
+		"method_names": {
+			"singular": "report_group",
+			"plural": "report_groups"
+		},
+		"actions": [
+			"get",
+			"add",
+			"update",
+			"delete"
+		]
+	},
+	"OpsNote": {
+		"url": "/setting/opsnotes",
+		"method_names": {
+			"singular": "ops_note",
+			"plural": "ops_notes"
+		},
+		"actions": [
+			"get",
+			"add",
+			"update",
+			"delete"
+		]
+	},
+	"RemediationSource": {
+		"url": "/setting/remediationsources",
+		"method_names": {
+			"singular": "remediation_source",
+			"plural": "remediation_sources"
+		},
+		"actions": [
+			"get",
+			"add",
+			"update",
+			"delete"
+		]
 	},
 	"Alert": {
 		"url": "/alert/alerts",
@@ -418,6 +548,32 @@
 		},
 		"actions": [
 			"get"
+		]
+	},
+	"TopologySource": {
+		"url": "/setting/topologysources",
+		"method_names": {
+			"singular": "topology_source",
+			"plural": "topology_sources"
+		},
+		"actions": [
+			"get",
+			"add",
+			"update",
+			"delete"
+		]
+	},
+	"TrackQueryGroup": {
+		"url": "/trackedquerygroups",
+		"method_names": {
+			"singular": "track_query_group",
+			"plural": "track_query_groups"
+		},
+		"actions": [
+			"get",
+			"add",
+			"update",
+			"delete"
 		]
 	},
 	"Netscans": {

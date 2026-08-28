@@ -20,10 +20,12 @@ module LMRest
     class << self
 
       def parse(body)
+        return nil if body.nil?
+
         begin
-          if body.key? 'items'
+          if body.is_a?(Hash) && body.key?('items')
             parse_collection(body['items'])
-          elsif body.match? /\<\?xml version/
+          elsif body.is_a?(String) && body.match?(/\<\?xml version/)
             body
           else
             parse_object(body)

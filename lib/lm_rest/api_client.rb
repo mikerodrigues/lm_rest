@@ -74,7 +74,9 @@ module LMRest
       response = execute_request(method, url, json_params, headers)
       handle_response(response)
 
-      if response.headers[:content_type] == "application/json"
+      return nil if response.body.nil? || response.body.empty?
+
+      if response.headers[:content_type].to_s.include?("application/json")
         JSON.parse(response.body)
       else
         response.body
@@ -100,7 +102,7 @@ module LMRest
         when :put
           RestClient.put(url, json_params, headers)
         when :delete
-          RestClient.delete(url, headers: headers)
+          RestClient.delete(url, headers)
         end
       rescue => e
         puts e.http_body
@@ -109,7 +111,7 @@ module LMRest
     end
 
     def handle_response(response)
-      if response.code != 200
+      unless response.code.between?(200, 299)
         puts "#{response.code}: #{response.body}"
         raise
       end
@@ -175,6 +177,8 @@ module LMRest
           define_add_method(resource_uri, singular)
         when 'update'
           define_update_method(resource_uri, singular)
+        when 'delete'
+          define_delete_method(resource_uri, singular)
         end
       end
     end
@@ -217,6 +221,13 @@ module LMRest
     def self.define_update_method(resource_uri, singular)
       define_method("update_#{singular}") do |id, properties = {}|
         Resource.parse request(:put, "#{resource_uri}/#{id}", properties)
+      end
+    end
+
+    def self.define_delete_method(resource_uri, singular)
+      define_method("delete_#{singular}") do |id, params = {}|
+        id = id.id if id.is_a?(LMRest::Resource)
+        Resource.parse request(:delete, "#{resource_uri}/#{id}#{RequestParams.parameterize(params)}", nil)
       end
     end
 
