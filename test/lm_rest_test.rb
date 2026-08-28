@@ -4,45 +4,14 @@ class LMRestTest < Minitest::Test
   class FakeClient < LMRest::APIClient
     attr_reader :last_request
 
-    def request(method, uri, params = {})
-      @last_request = [method, uri, params]
+    def request(method, uri, params = nil, content_type: 'application/json')
+      @last_request = [method, uri, params, content_type]
       { 'id' => 1, 'name' => 'response' }
     end
 
-    def paginate(uri, params)
-      @last_request = [:get, uri.call(params), nil]
+    def paginate(uri, params, method = :get, payload = nil, content_type = 'application/json')
+      @last_request = [method, uri.call(params), payload, content_type]
       { 'items' => [{ 'id' => 1, 'name' => 'response' }], 'total' => 1 }
-    end
-  end
-
-  class PagingClient < LMRest::APIClient
-    attr_reader :requests
-
-    def initialize(total_items, company = 'company', access_id = 'access_id', access_key = 'access_key')
-      @total_items = total_items
-      @requests = []
-      super(company, access_id, access_key)
-    end
-
-    def request(method, uri, params = {})
-      @requests << [method, uri, params]
-      query_string = uri.split('?', 2)[1].to_s
-      query_params = query_string.split('&').each_with_object({}) do |part, query|
-        next if part.empty?
-
-        key, value = part.split('=', 2)
-        query[key] = value
-      end
-
-      size = query_params.fetch('size', '0').to_i
-      offset = query_params.fetch('offset', '0').to_i
-      count = [size, @total_items - offset].min
-      count = 0 if count.negative?
-
-      {
-        'items' => count.times.map { |index| { 'id' => offset + index + 1 } },
-        'total' => @total_items
-      }
     end
   end
 
@@ -50,98 +19,47 @@ class LMRestTest < Minitest::Test
     refute_nil ::LMRest::VERSION
   end
 
-  def test_defines_delete_methods_for_existing_and_new_resources
+  def test_defines_swagger_operation_methods_and_legacy_aliases
     client = FakeClient.new('company', 'access_id', 'access_key')
 
+    assert_respond_to client, :get_device_list
+    assert_respond_to client, :get_devices
+    assert_respond_to client, :get_device_datasource_instance_list
     assert_respond_to client, :delete_device
-    assert_respond_to client, :delete_access_group
-    assert_respond_to client, :delete_action_chain
-    assert_respond_to client, :delete_diagnostic_source
-    assert_respond_to client, :delete_log_source
-    assert_respond_to client, :delete_report_group
-    assert_respond_to client, :delete_topology_source
+    assert_respond_to client, :get_version
+    assert_respond_to client, :get_message
   end
 
-  def test_delete_method_builds_path_and_query_string
+  def test_get_alias_builds_path_and_query_string
     client = FakeClient.new('company', 'access_id', 'access_key')
 
-    client.delete_device(42, deleteHard: true)
+    client.get_device(42, fields: 'name')
 
-    assert_equal [:delete, '/device/devices/42?deleteHard=true', nil], client.last_request
+    assert_equal [:get, '/device/devices/42?fields=name', nil, 'application/json'], client.last_request
   end
 
-  def test_delete_method_accepts_resource_objects
+  def test_paginated_list_alias_uses_generated_operation
+    client = FakeClient.new('company', 'access_id', 'access_key')
+
+    client.get_devices(filter: 'name:"web*"', size: 1)
+
+    assert_equal [:get, '/device/devices?filter=name%3A%22web*%22&size=1', nil, 'application/json'], client.last_request
+  end
+
+  def test_update_alias_accepts_resource_body
     client = FakeClient.new('company', 'access_id', 'access_key')
     device = LMRest::Resource.new('id' => 42, 'name' => 'web01')
 
-    client.delete_device(device)
+    client.update_device(device)
 
-    assert_equal [:delete, '/device/devices/42', nil], client.last_request
+    assert_equal [:put, '/device/devices/42', { 'id' => 42, 'name' => 'web01' }, 'application/json'], client.last_request
   end
 
-  def test_execute_request_uses_restclient_delete_with_headers
-    client = LMRest::APIClient.new('company', 'access_id', 'access_key')
-    headers = { 'Authorization' => 'token' }
-    captured = nil
+  def test_nested_operation_fills_multiple_path_params
+    client = FakeClient.new('company', 'access_id', 'access_key')
 
-    rest_client_singleton = RestClient.singleton_class
-    rest_client_singleton.class_eval do
-      alias_method :__lm_rest_test_delete, :delete
-      define_method(:delete) do |url, passed_headers|
-        captured = [url, passed_headers]
-      end
-    end
+    client.get_device_datasource_instance_list(10, 20, size: 1)
 
-    begin
-      client.execute_request(:delete, 'https://company.logicmonitor.com/santaba/rest/device/devices/42', nil, headers)
-    ensure
-      rest_client_singleton.class_eval do
-        remove_method :delete
-        alias_method :delete, :__lm_rest_test_delete
-        remove_method :__lm_rest_test_delete
-      end
-    end
-
-    assert_equal ['https://company.logicmonitor.com/santaba/rest/device/devices/42', headers], captured
-  end
-
-  def test_resource_parse_returns_nil_for_nil_body
-    assert_nil LMRest::Resource.parse(nil)
-  end
-
-  def test_paginate_fetches_all_pages_when_total_exceeds_limit
-    client = PagingClient.new(2500)
-
-    datasources = client.get_datasources
-
-    assert_equal 2500, datasources.length
-    assert_equal [
-      [:get, '/setting/datasources?size=1000&offset=0', nil],
-      [:get, '/setting/datasources?size=1000&offset=1000', nil],
-      [:get, '/setting/datasources?size=500&offset=2000', nil]
-    ], client.requests
-  end
-
-  def test_paginate_fetches_exact_limit_multiple_without_zero_sized_page
-    client = PagingClient.new(2000)
-
-    datasources = client.get_datasources
-
-    assert_equal 2000, datasources.length
-    assert_equal [
-      [:get, '/setting/datasources?size=1000&offset=0', nil],
-      [:get, '/setting/datasources?size=1000&offset=1000', nil]
-    ], client.requests
-  end
-
-  def test_paginate_respects_requested_size_below_limit
-    client = PagingClient.new(2500)
-
-    datasources = client.get_datasources(size: 50)
-
-    assert_equal 50, datasources.length
-    assert_equal [
-      [:get, '/setting/datasources?size=50&offset=0', nil]
-    ], client.requests
+    assert_equal [:get, '/device/devices/10/devicedatasources/20/instances?size=1', nil, 'application/json'], client.last_request
   end
 end

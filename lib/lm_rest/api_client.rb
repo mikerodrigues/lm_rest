@@ -3,6 +3,7 @@ require 'base64'
 require 'openssl'
 require 'rest-client'
 require 'json'
+require 'uri'
 require 'lm_rest/resource'
 require 'lm_rest/request_params'
 
@@ -39,19 +40,14 @@ module LMRest
       uri.split("?")[0].split("/").join("/")
     end
 
-    def sign(method, uri, data = nil)
-
+    def sign(method, uri, data = nil, content_type = 'application/json')
       resource_uri = uri_to_resource_uri(uri)
 
       time = DateTime.now.strftime('%Q')
 
       http_method = method.to_s.upcase
 
-      if data.nil? || data.empty?
-        data = ''
-      else
-        data = data.to_json.to_s
-      end
+      data = data_for_signature(data, content_type)
 
       message =  "#{http_method}#{time}#{data}#{resource_uri}"
 
@@ -66,46 +62,50 @@ module LMRest
       "LMv1 #{access_id}:#{signature}:#{time}"
     end
 
-    def request(method, uri, params = {})
-      headers = build_headers(method, uri, params)
+    def request(method, uri, params = nil, content_type: 'application/json')
+      headers = build_headers(method, uri, params, content_type)
       url = api_url + uri
-      json_params = params.to_json
+      payload = serialize_payload(params, content_type)
 
-      response = execute_request(method, url, json_params, headers)
+      response = execute_request(method.to_sym, url, payload, headers)
       handle_response(response)
 
-      return nil if response.body.nil? || response.body.empty?
-
-      if response.headers[:content_type].to_s.include?("application/json")
-        JSON.parse(response.body)
-      else
-        response.body
-      end
+      parse_response(response)
     end
 
-    def build_headers(method, uri, params)
-      {
-        'Authorization' => sign(method, uri, params),
-        'Content-Type' => 'application/json',
+    def build_headers(method, uri, params, content_type)
+      headers = {
+        'Authorization' => sign(method, uri, params, content_type),
         'Accept' => 'application/json, text/javascript',
         'X-version' => '3'
       }
+
+      headers['Content-Type'] = content_type unless multipart_form?(content_type)
+      headers
     end
 
-    def execute_request(method, url, json_params, headers)
+    def execute_request(method, url, payload, headers)
       begin
         case method
         when :get
           RestClient.get(url, headers)
         when :post
-          RestClient.post(url, json_params, headers)
+          RestClient.post(url, payload, headers)
         when :put
-          RestClient.put(url, json_params, headers)
+          RestClient.put(url, payload, headers)
+        when :patch
+          RestClient.patch(url, payload, headers)
         when :delete
-          RestClient.delete(url, headers)
+          if payload.nil?
+            RestClient.delete(url, headers)
+          else
+            RestClient::Request.execute(method: :delete, url: url, payload: payload, headers: headers)
+          end
+        else
+          raise ArgumentError, "unsupported HTTP method: #{method}"
         end
       rescue => e
-        puts e.http_body
+        puts e.http_body if e.respond_to?(:http_body)
         raise
       end
     end
@@ -116,9 +116,19 @@ module LMRest
         raise
       end
 
-      @limit = response.headers['x_rate_limit_limit']
-      @remaining = response.headers['x_rate_limit_remaining']
-      @window = response.headers['x_rate_limit_window']
+      @limit = response.headers[:x_rate_limit_limit] || response.headers['x_rate_limit_limit']
+      @remaining = response.headers[:x_rate_limit_remaining] || response.headers['x_rate_limit_remaining']
+      @window = response.headers[:x_rate_limit_window] || response.headers['x_rate_limit_window']
+    end
+
+    def parse_response(response)
+      return nil if response.body.nil? || response.body.empty?
+
+      if response.headers[:content_type].to_s.include?('application/json')
+        JSON.parse(response.body)
+      else
+        response.body
+      end
     end
 
     # Handles making multiple requests to the API if pagination is necessary.
@@ -128,26 +138,24 @@ module LMRest
     # If you need to walk through resources page-by-page manullay, use the
     # request() method with the 'offset' and 'size' params
     #
-    def paginate(uri, params)
-      params = params.nil? ? {} : params.dup
+    def paginate(uri, params, method = :get, payload = nil, content_type = 'application/json')
+      params = normalize_params_hash(params)
       user_size = params[:size]&.to_i
       params[:size] = user_size && user_size < ITEMS_SIZE_LIMIT ? user_size : ITEMS_SIZE_LIMIT
-      params[:offset] ||= 0
+      params[:offset] = (params[:offset] || 0).to_i
 
-      body = request(:get, uri.call(params), nil)
+      body = request(method, uri.call(params), payload, content_type: content_type)
       return body unless body.is_a?(Hash) && body.key?('items')
 
-      item_collector = body['items']
-      total = body['total'] || item_collector.length
+      total = (body['total'] || body['items'].length).to_i
       user_size = determine_user_size(user_size, total)
-      item_collector = item_collector.first(user_size)
+      item_collector = body['items'].first(user_size)
 
       while item_collector.length < user_size
-        params[:offset] += params[:size]
+        params[:offset] += params[:size].to_i
         remaining = user_size - item_collector.length
         params[:size] = [remaining, ITEMS_SIZE_LIMIT].min
-
-        body = request(:get, uri.call(params), nil)
+        body = request(method, uri.call(params), payload, content_type: content_type)
         break unless body.is_a?(Hash) && body.key?('items')
         break if body['items'].empty?
 
@@ -161,6 +169,29 @@ module LMRest
     def determine_user_size(user_size, total)
       user_size ||= total
       user_size > total ? total : user_size
+    end
+
+    def self.define_operation_methods(operations)
+      operations.each do |method_name, operation|
+        define_operation_method(method_name, operation)
+      end
+    end
+
+    def self.define_operation_method(method_name, operation)
+      define_method(method_name) do |*args|
+        perform_operation(operation, args)
+      end
+    end
+
+    def self.define_alias_methods(aliases)
+      aliases.each do |alias_name, target_name|
+        next if alias_name == target_name
+        next unless method_defined?(target_name)
+
+        define_method(alias_name) do |*args|
+          public_send(target_name, *args)
+        end
+      end
     end
 
     def self.define_action_methods(resource_type, attributes)
@@ -219,6 +250,11 @@ module LMRest
 
     def self.define_update_method(resource_uri, singular)
       define_method("update_#{singular}") do |id, properties = {}|
+        if id.is_a?(LMRest::Resource)
+          properties = id.to_h if properties.empty?
+          id = id.id
+        end
+
         Resource.parse request(:put, "#{resource_uri}/#{id}", properties)
       end
     end
@@ -226,15 +262,14 @@ module LMRest
     def self.define_delete_method(resource_uri, singular)
       define_method("delete_#{singular}") do |id, params = {}|
         id = id.id if id.is_a?(LMRest::Resource)
-        Resource.parse request(:delete, "#{resource_uri}/#{id}#{RequestParams.parameterize(params)}", nil)
+        uri = "#{resource_uri}/#{id}#{RequestParams.parameterize(params)}"
+        Resource.parse request(:delete, uri, nil)
       end
     end
 
     def self.define_child_methods(resource_type, attributes)
       parent_singular = attributes['method_names']['singular']
-      parent_plural = attributes['method_names']['plural']
       parent_resource_uri = attributes['url']
-      parent_id = attributes['parent_id_key']
       children = attributes['children']
 
       children.each do |child_name|
@@ -278,12 +313,22 @@ module LMRest
 
     # Define methods based on the JSON structure
     def self.setup
+      return if @api_methods_defined
+
       @@api_definition_path = File.expand_path(File.join(File.dirname(__FILE__), "../../api.json"))
       @@api_json = JSON.parse(File.read(@@api_definition_path))
-      @@api_json.each do |resource_type, attributes|
-        define_action_methods(resource_type, attributes) if attributes['actions']
-        define_child_methods(resource_type, attributes) if attributes['children']
+
+      if @@api_json['operations']
+        define_operation_methods(@@api_json['operations'])
+        define_alias_methods(@@api_json['aliases'] || {})
+      else
+        @@api_json.each do |resource_type, attributes|
+          define_action_methods(resource_type, attributes) if attributes['actions']
+          define_child_methods(resource_type, attributes) if attributes['children']
+        end
       end
+
+      @api_methods_defined = true
     end
 
     # Ack a down collector, pass the ID and a comment
@@ -339,6 +384,143 @@ module LMRest
     private
 
     attr_accessor :access_key
+
+    def perform_operation(operation, args)
+      path_values, body, query_params = coerce_operation_arguments(operation, args)
+      content_type = request_content_type(operation)
+      method = operation['method'].to_sym
+      uri = lambda { |params| operation_uri(operation, path_values, params) }
+
+      response =
+        if operation['paginated']
+          paginate(uri, query_params, method, body, content_type)
+        else
+          request(method, uri.call(query_params), body, content_type: content_type)
+        end
+
+      Resource.parse(response)
+    end
+
+    def coerce_operation_arguments(operation, args)
+      args = args.dup
+      path_param_names = operation['path_params'] || []
+      has_body = !!operation['body_param']
+      query_params = {}
+      inferred_body = nil
+
+      if has_body
+        if args.length > path_param_names.length + 1 && args.last.is_a?(Hash)
+          query_params = args.pop
+        elsif !operation['body_required'] &&
+              args.length == path_param_names.length + 1 &&
+              args.last.is_a?(Hash) &&
+              query_params_only?(args.last, operation)
+          query_params = args.pop
+        end
+
+        if path_param_names.length == 1 &&
+           args.length == 1 &&
+           resource_like?(args.first) &&
+           %w[put patch].include?(operation['method'])
+          inferred_body = args.first
+        end
+      elsif args.length > path_param_names.length && args.last.is_a?(Hash)
+        query_params = args.pop
+      end
+
+      path_values = path_param_names.map do
+        value = args.shift
+        value = inferred_body if value.nil?
+        resource_id(value)
+      end
+
+      if path_values.any?(&:nil?)
+        raise ArgumentError, "#{operation['name']} requires path params: #{path_param_names.join(', ')}"
+      end
+
+      body = nil
+      if has_body
+        body_arg = args.shift || inferred_body
+        if body_arg.nil? && operation['body_required']
+          raise ArgumentError, "#{operation['name']} requires a request body"
+        end
+        body = resource_to_hash(body_arg) unless body_arg.nil?
+      end
+
+      unless args.empty?
+        raise ArgumentError, "wrong number of arguments for #{operation['name']}"
+      end
+
+      [path_values, body, normalize_params_hash(query_params)]
+    end
+
+    def operation_uri(operation, path_values, query_params)
+      uri = operation['path'].dup
+
+      (operation['path_params'] || []).zip(path_values).each do |name, value|
+        uri.gsub!("{#{name}}", URI.encode_www_form_component(value.to_s))
+      end
+
+      "#{uri}#{RequestParams.parameterize(query_params)}"
+    end
+
+    def request_content_type(operation)
+      Array(operation['consumes']).find { |type| type && !type.empty? } || 'application/json'
+    end
+
+    def normalize_params_hash(params)
+      return {} if params.nil?
+
+      params.each_with_object({}) do |(key, value), normalized|
+        normalized[key.to_sym] = value
+      end
+    end
+
+    def query_params_only?(params, operation)
+      query_param_names = operation['query_params'] || []
+      return false if query_param_names.empty?
+
+      params.keys.all? { |key| query_param_names.include?(key.to_s) }
+    end
+
+    def resource_like?(value)
+      value.is_a?(LMRest::Resource) || value.is_a?(Hash)
+    end
+
+    def resource_id(value)
+      case value
+      when LMRest::Resource
+        value.id if value.respond_to?(:id)
+      when Hash
+        value[:id] || value['id']
+      else
+        value
+      end
+    end
+
+    def resource_to_hash(value)
+      value.is_a?(LMRest::Resource) ? value.to_h : value
+    end
+
+    def data_for_signature(data, content_type)
+      return '' if data.nil? || (data.respond_to?(:empty?) && data.empty?)
+      return '' if multipart_form?(content_type)
+      return data if data.is_a?(String)
+
+      data.to_json.to_s
+    end
+
+    def serialize_payload(payload, content_type)
+      return nil if payload.nil?
+      return payload if multipart_form?(content_type)
+      return payload if payload.is_a?(String)
+
+      payload.to_json
+    end
+
+    def multipart_form?(content_type)
+      content_type.to_s.include?('multipart/form-data')
+    end
 
     def website_interval_minutes(site)
       interval_attrs = %i[checkInterval interval pollingInterval testInterval]
